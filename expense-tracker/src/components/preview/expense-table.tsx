@@ -1,0 +1,22 @@
+"use client";
+
+import { useEffect, useRef, useState } from "react";
+import { ArrowDownUp, FileText, ReceiptText, Search, X } from "lucide-react";
+import type { PreviewExpense } from "@/lib/preview/fixtures";
+import { formatMoney } from "@/domain/money";
+
+export function ExpenseTable({ rows, compact = false }: { rows: PreviewExpense[]; compact?: boolean }) {
+  const [search, setSearch] = useState("");
+  const [category, setCategory] = useState("");
+  const [ascending, setAscending] = useState(false);
+  const [selected, setSelected] = useState<PreviewExpense | null>(null);
+  const dialog = useRef<HTMLDialogElement>(null);
+  useEffect(() => { if (selected) dialog.current?.showModal(); else dialog.current?.close(); }, [selected]);
+  const filtered = rows.filter((row) => (!category || row.category === category) && `${row.title} ${row.person} ${row.category}`.toLowerCase().includes(search.toLowerCase())).sort((a, b) => ascending ? a.amountMinor - b.amountMinor : b.date.localeCompare(a.date));
+  return <>{!compact && <div className="table-toolbar"><div className="search-input"><Search size={17} /><input aria-label="Search expenses" placeholder="Search expenses or team members…" value={search} onChange={(event) => setSearch(event.target.value)} /></div><select className="filter-select" aria-label="Filter by category" value={category} onChange={(event) => setCategory(event.target.value)}><option value="">All categories</option>{Array.from(new Set(rows.map((row) => row.category))).map((value) => <option key={value}>{value}</option>)}</select><button className="button secondary" aria-pressed={ascending} onClick={() => setAscending(!ascending)}><ArrowDownUp size={15} /> {ascending ? "Amount: low to high" : "Newest first"}</button></div>}
+    <div className="table-scroll"><table className="expense-table"><caption className="sr-only">Fictional expense submissions for the selected month</caption><thead><tr><th>Expense details</th><th>Category</th><th>Date</th><th>Logged by</th><th className="align-right">Amount</th></tr></thead><tbody>{filtered.map((row) => <tr key={row.id}><td><button className="expense-title" onClick={() => setSelected(row)}><span className="table-icon"><ReceiptText size={17} /></span><span><strong>{row.title}</strong><small>{row.frequency}</small></span></button></td><td><span className={`category-tag ${row.category === "Transportation" ? "teal" : row.category === "Salaries" ? "purple" : ""}`}>{row.category}</span></td><td className="muted nowrap">{new Intl.DateTimeFormat("en-GB", { day: "2-digit", month: "short", timeZone: "UTC" }).format(new Date(`${row.date}T12:00:00Z`))}</td><td><span className="table-person"><span className="avatar tiny">{row.initials}</span>{row.person}</span></td><td className="amount align-right">{formatMoney(row.amountMinor, "NGN")}</td></tr>)}</tbody></table></div>
+    {filtered.length === 0 && <div className="table-empty"><Search size={24} /><h3>{rows.length ? "No matching expenses" : "No sample expenses this month"}</h3><p>{rows.length ? "Try another search or category." : "Choose September to explore the sample register."}</p>{rows.length > 0 && <button className="text-button" onClick={() => { setSearch(""); setCategory(""); }}>Clear filters</button>}</div>}
+    {!compact && <div className="table-footer"><span>{filtered.length} of {rows.length} sample records</span><span>Read-only preview</span></div>}
+    <dialog ref={dialog} className="record-dialog" onCancel={() => setSelected(null)} onClose={() => setSelected(null)} aria-labelledby="record-title">{selected && <><div className="dialog-header"><span className="eyebrow">SAMPLE EXPENSE</span><button className="icon-button" onClick={() => setSelected(null)} aria-label="Close expense details"><X size={20} /></button></div><h2 id="record-title">{selected.title}</h2><p className="dialog-amount">{formatMoney(selected.amountMinor, "NGN")}</p><dl className="record-details"><div><dt>Category</dt><dd>{selected.category}</dd></div><div><dt>Expense date</dt><dd>{selected.date}</dd></div><div><dt>Logged by</dt><dd>{selected.person}</dd></div><div><dt>Frequency</dt><dd>{selected.frequency}</dd></div></dl><div className="record-notes"><strong>Notes</strong><p>{selected.notes}</p></div><p className="placeholder-note"><FileText size={16} /> No sample attachment</p><div className="notice">Preview only. This record cannot be changed or saved.</div></>}</dialog>
+  </>;
+}

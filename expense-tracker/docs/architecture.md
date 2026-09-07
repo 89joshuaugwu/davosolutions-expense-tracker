@@ -6,6 +6,7 @@ This document explains the foundation and the contracts that later features must
 
 - One internal Davo Solutions company, separate from Ads Manager.
 - Next.js App Router, TypeScript, Firebase Authentication, Cloud Firestore, server-side authorization, Recharts, and Vercel.
+- Cloudinary is the confirmed image/PDF/document storage provider. Firebase Storage is unused. Keep Cloudinary API credentials server-only, uploads signed, and delivery authenticated with parent-record authorization.
 - Target production domain: `expenses.davosolutions.com`.
 - No Ads Manager credentials, Firebase project configuration, data, routes, authentication context, or operational services are copied into this application.
 - Existing Davo artwork/color references are presentation assets only. The compact Davo mark and blue/navy palette connect the products; their data remains separate.
@@ -109,7 +110,7 @@ Append-only means the application offers creation and restricted reads of audit 
 
 ## Attachments and reminder jobs
 
-Storage provider is intentionally unresolved. Existing Ads Manager Cloudinary code is not evidence that public receipt links are acceptable. Choose private Firebase Storage or Cloudinary's authenticated/private delivery after confirming document privacy and hosting costs. Until configured, attachment controls must honestly explain their availability and must not silently discard a chosen file.
+Cloudinary is the confirmed provider for images, PDFs and documents, with server-only environment values and verified API/preset access. The preset is currently unsigned; signed-only upload configuration and authenticated delivery remain required in E4. Existing Ads Manager Cloudinary code is not evidence that public receipt links are acceptable. Implement private downloads through parent-record authorization and test actual file retrieval. Until the workflows are implemented, attachment controls must explain their availability and must not silently discard a chosen file.
 
 The storage workflow must authorize upload intent and download by record visibility, validate MIME/signature and size, use unpredictable object keys, and store attachment IDs/metadata rather than permanent public URLs. Short-lived signed delivery links are issued only after server access checks. File upload and Firestore commits are not one transaction: use temporary ownership records and orphan cleanup, and audit attach/detach outcomes.
 

@@ -32,7 +32,7 @@ Successful login, authenticated logout, and denied logins for verified identitie
 
 “Append-only” currently means application-enforced. A principal with privileged Admin SDK/IAM access can modify or delete audit documents. Production immutability needs restricted administrative access, monitored cloud audit events, backups/retention, and an independent retention-protected audit destination if tamper resistance is required. Do not claim this foundation provides physical or cryptographic immutability.
 
-Attachment storage remains unselected. Do not enable public Cloudinary URLs or Firebase download tokens for private salary/financial evidence. Define private uploads, MIME/size validation, malware handling, authorization on download, retention, and orphan cleanup in the attachment phase. `firestore.indexes.json` is deliberately empty; add indexes for concrete authorized queries as features are implemented.
+Cloudinary is selected for attachment storage; Firebase Storage stays unused with deny-all rules. The user-supplied credentials/preset were verified by a read-only Admin API request. The preset currently allows unsigned uploads and has no authenticated delivery setting. Before enabling receipts, configure signed-only uploads, explicitly set authenticated delivery on the server, and test restricted retrieval. Do not publish salary/financial evidence through public CDN URLs. Define MIME/content-signature/size validation, authorized download, retention, and orphan cleanup in E4. Account verification alone does not prove private delivery. `firestore.indexes.json` is deliberately empty; add indexes for concrete authorized queries as features are implemented.
 
 ## First administrator
 

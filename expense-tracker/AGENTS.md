@@ -20,7 +20,7 @@ This is a standalone internal financial app. The current scope is `Davo_Solution
 - Persist source + posting + append-only audit + idempotency receipt atomically. Check active authorization, expected revision, and rate/category/settings within transactional operations where needed. Use server-selected amounts/rates and timestamps; do not trust browser-derived values or ownership.
 - Corrections/archives/recalculations require a meaningful reason, previous/new values, and an audit event. Use `appendAuditInTransaction()`. Audit schemas live in `src/lib/server/audit-model.ts`; domain DTOs reuse them.
 - Date-only business events use validated `YYYY-MM-DD`; reporting funds use unique `YYYY-MM`. Company time is `Africa/Lagos`. No automatic fund carryover. Pending salary posting behavior is provisional and must be confirmed before the salary workflow.
-- Receipt access must be private and authorized by parent-record visibility. Storage is not yet selected. A public unsigned upload preset is unsuitable for financial evidence.
+- Cloudinary is the user-selected provider for images, PDFs and documents; Firebase remains for Auth/Firestore. Receipt access must be private and authorized by parent-record visibility. Server-only Cloudinary configuration is in `src/lib/cloudinary/`; `.env.local` contains the supplied credentials. The verified preset is currently unsigned: use signed server uploads with explicit authenticated delivery and complete E4 private-access checks before enabling receipts. Do not implement public unsigned receipt uploads or ask the user to select a provider again.
 
 ## Quality and handoff
 

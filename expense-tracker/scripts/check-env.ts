@@ -2,6 +2,7 @@ import { readFileSync } from "node:fs";
 import { createPrivateKey } from "node:crypto";
 import { parseEnv } from "node:util";
 import { firebaseConfigSchema } from "../src/lib/firebase/config";
+import { cloudinaryConfigSchema } from "../src/lib/cloudinary/config";
 
 let raw: string;
 try { raw = readFileSync(".env.local", "utf8"); }
@@ -21,6 +22,17 @@ if (!parsed.success) {
 }
 const names = [...raw.matchAll(/^([A-Z][A-Z0-9_]*)=/gm)].map((match) => match[1]);
 if (new Set(names).size !== names.length) { console.error("Duplicate environment variable names found; remove ambiguity before starting."); process.exitCode = 1; }
-for (const group of [["SMTP_HOST", "SMTP_PORT", "SMTP_USER", "SMTP_PASS", "SMTP_FROM"], ["ATTACHMENT_PROVIDER"], ["CRON_SECRET"]]) {
+if (env.ATTACHMENT_PROVIDER === "cloudinary") {
+  const cloudinary = cloudinaryConfigSchema.safeParse(env);
+  for (const key of ["ATTACHMENT_PROVIDER", "CLOUDINARY_CLOUD_NAME", "CLOUDINARY_UPLOAD_PRESET", "CLOUDINARY_API_KEY", "CLOUDINARY_API_SECRET"]) console.log(`${key}: ${env[key] ? "set" : "not set"}`);
+  if (!cloudinary.success) {
+    console.error(`Cloudinary configuration needs attention: ${[...new Set(cloudinary.error.issues.map((issue) => issue.path.join(".")))].join(", ")}.`);
+    process.exitCode = 1;
+  } else console.log("Cloudinary local configuration is valid. Upload/download workflows remain pending; no remote check performed.");
+} else if (env.ATTACHMENT_PROVIDER) {
+  console.error("ATTACHMENT_PROVIDER must be cloudinary for the currently selected storage plan.");
+  process.exitCode = 1;
+} else console.log("Cloudinary is the selected provider; local attachment configuration is not yet populated.");
+for (const group of [["SMTP_HOST", "SMTP_PORT", "SMTP_USER", "SMTP_PASS", "SMTP_FROM"], ["CRON_SECRET"]]) {
   console.log(`Future integration (${group.join(", ")}): ${group.every((key) => env[key]) ? "values present; code not yet wired" : "not configured; not needed for foundation"}`);
 }

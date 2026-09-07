@@ -52,7 +52,7 @@ Do not tell the user that expense saving, live dashboards, rate management, invi
 | Initial Super Admin | Provision a Firebase identity and a matching active privileged profile through a trusted setup process; never public bootstrap/signup. | First live administrative session |
 | Secretary visibility | Own records plus explicit assignments; specialized register reads require grants; operational submission remains allowed while active; sensitive operational totals off by default. | Account provisioning and record query tests |
 | Salary accounting | **Provisional:** pending salaries do not post; paid salaries post once on payment date. Scope wording is ambiguous. | `S1`; confirm interpretation and pending-to-paid authorization |
-| Storage | Provider not selected. Private Firebase Storage or private/authenticated Cloudinary delivery must be evaluated. | `E4`; do not ship public receipts or fake uploads |
+| Storage | **Cloudinary confirmed by the user** for images, PDFs and documents. Server credentials/preset configured locally; API access and preset existence verified. The preset is currently unsigned with no authenticated delivery setting. Firebase Storage is unused. | `E4`: signed-only/private configuration, adapter, file validation and authorized delivery; do not ask for provider choice again |
 | SMTP and reminders | 7/3/1-day leads, Super Admin recipients initially, authenticated scheduler independent of UI. | `A3` delivery integration |
 | Base currency changes | NGN initially; reject changes once any monetary record exists. | `M2`; later migration would be separate planned work |
 | Recurrence dates | Proposed end-of-month clamp with original anchor retained. | `B1`; document chosen leap-day/month-end behavior |
@@ -142,9 +142,10 @@ Acceptance: a permitted user submits one NGN expense, reloads and sees its saved
 
 Acceptance: filters agree with results and authorized counts; Secretary cannot discover another user's private record by changing URL/body/query; a correction/archive changes totals once and keeps an immutable reasoned history. Unavailable aggregate counts are omitted, not guessed.
 
-### E4 — Private attachments on all financial entries [P0; depends on E2 and storage choice]
+### E4 — Private Cloudinary attachments on all financial entries [P0; depends on E2]
 
-- [ ] **E4.1** Confirm the storage provider and private-delivery configuration. Implement a server attachment adapter so forms do not depend on provider internals. Keep direct client rules closed unless a separately reviewed narrow upload design requires a change.
+- [x] **E4.1a** Provider selected: Cloudinary for images/PDFs/documents. Populate the five Cloudinary/provider environment values, add shared validation and a server-only loader, document configuration, and verify credentials/preset existence through `npm run cloudinary:check` (read-only). No secret values printed, files uploaded or preset changed.
+- [ ] **E4.1b** Complete secure preset configuration and the server attachment adapter using `src/lib/cloudinary/server.ts`. Verified preset currently reports unsigned and no authenticated delivery. Use signed-only uploads and force `type=authenticated` in server requests. Preserve original PDFs/documents as `raw`; images may use `image`. Record asset/public IDs, resource type, delivery type and version in private metadata; include extensions for raw public IDs. Check preset transformations do not modify receipt evidence. Test account-level PDF/document delivery restrictions without falling back to public URLs. Firebase Storage is unused and its direct rules stay closed.
 - [ ] **E4.2** Add authenticated upload intent/finalize/download flows. Check allowed MIME types and actual content signature, size/count, original filename handling, object ownership, record access, and attachment state. Use random object keys and attachment metadata IDs; never allow arbitrary external URLs to stand in for receipts.
 - [ ] **E4.3** Issue short-lived authorized download links or proxy private content. Guessing an attachment ID must not bypass salary/revenue/own-record permissions. Financial PDFs/documents are evidence, not public CDN assets.
 - [ ] **E4.4** Handle interrupted uploads, failed record submission, orphan cleanup, upload retry, and unauthorized attachment reuse. Audit attachment changes. Do not delete evidence backing a submitted record through a Secretary action.
@@ -264,13 +265,13 @@ Update this table from actual command output. Do not change pending rows to pass
 | Dependency installation/lockfile | Passed on Node 24.20.0; exact package versions locked; six moderate audit entries tracked in F1.8 | Clean supported-runtime install when CI is added |
 | Typecheck | Passed `npm run typecheck` / final `npm run check` | Pass after each slice |
 | Lint | Passed final `npm run check`; zero lint errors/warnings | Pass after each slice |
-| Domain/security unit tests | 31 passed, 0 failed; 1 emulator test skipped | Extend with meaningful edge cases |
+| Domain/security unit tests | 33 passed after Cloudinary configuration, 0 failed; 1 emulator test skipped | Extend with meaningful edge cases |
 | Production build | Passed final `npm run build` | Pass with final deployment environment |
 | Visual preview/browser smoke | 10 passed in headless Edge (desktop 1440×1100, mobile 390×844); screenshots reviewed including chart rendering | Expand viewport/accessibility matrix and real-user flows |
 | Local environment | Passed `npm run env:check`: identifiers agree; private key parses; no values printed or remote access | Validate live Firebase account/services and production origin |
 | Firebase session + Rules integration | Pending real account/service setup and emulator evidence | `F1.4` / `F1.5` |
 | Business transaction integration | Not implemented by foundation | `E2.4` onward |
-| Live email/private storage | Not configured by foundation | `E4` / `A3` |
+| Live email/private storage | Cloudinary account/preset verified read-only; private upload/download implementation and SMTP delivery pending | `E4` / `A3` |
 | Vercel/domain release | Not deployed by foundation | `R3` |
 
 ## Definition of done for each task
@@ -280,6 +281,9 @@ The path works end to end with honest UI states; authorization runs on the serve
 At the end of each model session, add a brief entry below with completed task IDs, changed contracts, commands/results, real blockers, and the single recommended next task. This prevents the next model from spending credits rediscovering work.
 
 ### Session log
+
+- **2026-09-07 — Cloudinary selected:** E4.1a completed using the user's supplied settings; no credentials copied into source/docs. Added `src/lib/cloudinary/{config,server}.ts`, `scripts/check-cloudinary.mjs`, and Cloudinary environment validation. Read-only API check accepted credentials and found the preset; it is unsigned without authenticated delivery, so E4.1b remains required before receipt uploads are enabled. No files uploaded or remote settings changed. Firebase continues as Auth/Firestore; Firebase Storage is unused. The next business slice remains E1 → E2 → E3; do not re-open provider selection.
+  Verification: environment validation, typecheck/lint and production build passed; 33 unit tests passed, one emulator test skipped. Browser tests were not repeated because this follow-up changes provider configuration/docs only and leaves the UI untouched.
 
 - **2026-09-07 — Foundation completed:** F1.1 and F1.2a done. Standalone application, Davo preview, protected shell/auth primitives, exact money/date/posting models, audit helpers, deny-all client rules, local environment utilities, and detailed handoff established. `npm run check` passed (31 unit tests, one explicit emulator skip), production build passed, and all 10 desktop/mobile Playwright checks passed. Dedicated supplied `.env.local` and Admin JSON were arranged/validated locally without displaying values; original local environment preserved in an ignored backup. No live Firebase call, first-admin provisioning, business persistence, SMTP, storage delivery, or deployment performed. Runtime dependency audit has six moderate entries tracked in F1.8. Recommended next slice: **E1 → E2 → E3**, alongside F1.2b/F1.3 when Firebase account/services are ready. Preserve the user's existing dev server; browser tests use port 3100 and `.next-e2e`.
 

@@ -34,7 +34,7 @@ Each scenario must test the server path. A hidden link, frontend conditional, st
 | SEC-07 | Salary/transport/bill view flag required for existing records, including own; active operational creation remains distinct | S1/T1/B1 | Default-false profile/policy contract; feature integration pending |
 | SEC-08 | Secretary cannot correct/archive own or other records, forge actor/role/FX/base amount, or add forbidden fields | E2/E3 | Correction/role policy foundation; request tests pending |
 | SEC-09 | No management data in Secretary server props, JSON, RSC payload, page source, chart series, count metadata, export or cache | D1/R1/R2 | Pending real-data screens/integration |
-| SEC-10 | Copied/guessed receipt IDs and expired signed links do not bypass record permissions; storage is private | E4 | Provider undecided; pending |
+| SEC-10 | Copied/guessed receipt IDs and expired signed links do not bypass record permissions; storage is private | E4 | Cloudinary selected; credentials/preset verified read-only. Preset unsigned; secure upload/download implementation and tests pending. |
 | SEC-11 | Sensitive APIs have private/no-store responses and guards even when invoked outside page navigation | All | Authentication foundation; business endpoint tests pending |
 | SEC-12 | Preview fixtures remain isolated; preview role display cannot mint a cookie or grant database access | R2 | Passed locally: source reviewed; preview never queries Firebase; secretary preview omits KPIs/revenue navigation and other people's records. Real-session data leakage tests remain future work. |
 | SEC-13 | Two concurrent demotions/deactivations cannot remove the last active Super Admin; partial Auth provisioning recoverable | A1 | Pending |
@@ -96,10 +96,12 @@ Add a pending salary, an unpaid bill, and a sent reminder: all metrics above mus
 | OPS-01 | Supported-runtime install, typecheck, lint, unit tests, production build pass | F1/R2 | Exact foundation command output recorded in README |
 | OPS-02 | Live/emulator authentication and deployed database/storage rules tested separately from pure policy tests | F1/R3 | Pending |
 | OPS-03 | Controlled SMTP test, scheduled invocation, retry/duplicate behavior, persisted delivery status | A3/R3 | Pending |
-| OPS-04 | Private storage upload/download/expiration/cleanup verified | E4/R3 | Pending provider selection |
+| OPS-04 | Private storage upload/download/expiration/cleanup verified | E4/R3 | Cloudinary selected and API/preset access verified. No uploads or private delivery verified yet; E4.1b onward pending. |
 | OPS-05 | Production root/env/origin/auth domains, DNS, HTTPS, backups, recovery and operator handover documented | R3 | Pending |
 
 ## Recording evidence
+
+Cloudinary follow-up, 2026-09-07: local environment validation passed; read-only Admin API request accepted supplied credentials and found the configured preset (unsigned, no authenticated delivery setting). `npm run check` passed with 33 tests, one explicit emulator skip, and clean typecheck/lint; production build passed. No uploads, downloads, or remote configuration changes occurred. Private delivery acceptance remains pending under E4.
 
 Foundation local run, 2026-09-07, Windows/Node 24.20.0: `npm run check` passed (31 unit tests, one explicitly skipped emulator test; clean typecheck/lint); `npm run build` passed; `npm run env:check` validated local configuration without remote requests; `npm run test:e2e` passed 10/10 in headless Edge at desktop/mobile widths. Tests are in `tests/domain/`, `tests/security/`, and `tests/e2e/foundation.spec.ts`. Screenshots under ignored `test-results/` were inspected. These checks do not promote any unfinished release acceptance item to complete.
 

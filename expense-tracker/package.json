@@ -15,6 +15,7 @@
     "test": "tsx --test tests/domain/*.test.ts tests/security/*.test.ts",
     "test:e2e": "playwright test",
     "env:check": "tsx scripts/check-env.ts",
+    "cloudinary:check": "node scripts/check-cloudinary.mjs",
     "check": "npm run typecheck && npm run lint && npm test",
     "bootstrap:admin": "node --env-file=.env.local scripts/bootstrap-admin.mjs"
   },

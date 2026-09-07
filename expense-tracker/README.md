@@ -27,7 +27,7 @@ Open [the design preview](http://localhost:3000/preview) to review the interface
 
 ## Configuration
 
-Read [`docs/environment.md`](docs/environment.md) for every variable, its source, and the scope phase that uses it. Firebase web identifiers and a dedicated Admin service account are needed now. SMTP, private attachment delivery, and cron configuration have labelled placeholders but are not integrated yet. V1 uses manual exchange rates and requires no exchange-rate API key.
+Read [`docs/environment.md`](docs/environment.md) for every variable, its source, and the scope phase that uses it. Firebase web identifiers and a dedicated Admin service account are configured locally. **Cloudinary is selected for images, PDFs and documents**; its server-only credentials and preset are configured and verified through a read-only API check. Firebase Storage is not used. Upload/download workflows, SMTP and cron integrations remain future tasks. V1 uses manual exchange rates and requires no exchange-rate API key.
 
 `npm run env:check` validates configuration without contacting Firebase or printing values. The local `APP_URL` is HTTP localhost for development. Set an HTTPS origin for production; `.env.local` localhost does not enable sign-in under `npm start` because production sessions intentionally require HTTPS.
 
@@ -78,6 +78,7 @@ src/components/          Davo app shell, auth UI, shared states and preview pres
 src/domain/              Exact money, FX snapshots, business dates, source models and postings
 src/lib/auth/            Current-profile authorization, session policy and route permissions
 src/lib/firebase/        Lazy server Admin/client Auth setup and shared config validation
+src/lib/cloudinary/      Selected attachment-provider config validation and server-only loader
 src/lib/server/          Bounded JSON requests, CSRF, runtime audit schema and append writer
 src/lib/preview/         Server-only fictional fixtures; no Firebase access
 tests/domain/            Financial and date invariants
@@ -88,7 +89,7 @@ docs/                    Architecture, financial model, security, environment, a
 
 Server operations use verified Firebase session cookies and read each account's current role/status. Direct browser Firestore and Storage access is denied. Firebase Admin bypasses those rules, so every future data service must authorize its own callers. The preview role selector never grants real privileges.
 
-Money uses integer minor units with exact decimal-string conversion and permanent rate snapshots. Reports aggregate one canonical `ledgerEntries` posting per financial event. Opening funds are not revenue; profit and closing balance stay separate. Pending salary accounting, private attachment provider, and some recurrence details are explicitly tracked decisions in the handoff.
+Money uses integer minor units with exact decimal-string conversion and permanent rate snapshots. Reports aggregate one canonical `ledgerEntries` posting per financial event. Opening funds are not revenue; profit and closing balance stay separate. Pending salary accounting and some recurrence details are explicitly tracked decisions in the handoff. Cloudinary's provider choice is confirmed; secure attachment implementation is E4.
 
 The audit helper uses create-only writes and belongs inside the same transaction as each future financial mutation. Application users cannot modify audits; privileged service-account/console access is an infrastructure trust boundary, not something Firestore client rules can eliminate. See [`docs/security.md`](docs/security.md).
 
@@ -97,13 +98,14 @@ Branding reuses the Davo compact mark and palette from the sibling Ads Manager. 
 ## Foundation verification · 7 September 2026
 
 - Dependency installation and production build completed successfully on Node 24.20.0.
-- Unit suite: 31 passed, 0 failed; 1 Firestore/Storage emulator test explicitly skipped.
+- Unit suite after Cloudinary configuration: 33 passed, 0 failed; 1 Firestore/Storage emulator test explicitly skipped.
 - Local environment validation passed: required settings present, project IDs agree, private key parses. No live Firebase request was made by that check.
 - `npm run check`: passed; strict typecheck and lint finished with no errors or warnings.
 - `npm run build`: passed after the final implementation changes.
 - `npm run test:e2e`: 10 passed in 45.6 seconds using headless Edge at 1440×1100 and 390×844. Checked unauthorized redirects, disabled unconfigured login, admin KPIs/month controls, all three chart series, secretary preview boundaries, search/category filters, detail dialog/Escape, and mobile navigation/no page overflow. Desktop/mobile dashboard screenshots were also inspected.
 - Runtime dependency audit reported 6 moderate entries, all in the Firebase Admin transitive dependency chain around the `uuid` buffer-bounds advisory. No high or critical entries. Do not run `npm audit fix --force`: npm proposes downgrading Firebase Admin to 10.x. Review a compatible upstream fix before release; see `todo.md` F1.8.
 - Real login/password-reset delivery, deployed rules, live Firestore persistence, SMTP, receipt storage, and production domain are not externally verified or deployed.
+- Cloudinary follow-up: `npm run env:check`, `npm run check`, and `npm run build` passed. `npm run cloudinary:check` verified credentials/preset through a read-only API request; the preset is currently unsigned without authenticated delivery. E4 tracks secure upload/download implementation. No remote files or settings changed.
 
 On this Windows host, the sandbox prevented `tsx` from reading user information (`uv_os_get_passwd ENOMEM`) and prevented clean Playwright process shutdown. The final tests were run successfully with the required permission. This is an execution-environment constraint, not an application test failure.
 

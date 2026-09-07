@@ -1,6 +1,6 @@
 # Environment and external services
 
-The scope requires Firebase Authentication, Cloud Firestore, Vercel, email reminders through SMTP, and private receipt storage. Recharts runs locally in the app and needs no API key. Exchange rates are entered by the Super Admin in v1, so no currency API is required. No bank, payment-provider, AI, or Ads Manager integration is needed.
+The scope requires Firebase Authentication, Cloud Firestore, Vercel, email reminders through SMTP, and private receipt storage. The user has selected **Cloudinary for images, PDFs and documents**, while Firebase remains the authentication/database service. Firebase Storage is not required for this implementation. Recharts runs locally in the app and needs no API key. Exchange rates are entered by the Super Admin in v1, so no currency API is required. No bank, payment-provider, AI, or Ads Manager integration is needed.
 
 Copy `.env.example` to `.env.local` for a new checkout. This file and service-account JSON files are ignored by Git. Never paste private values into source, screenshots, issue descriptions, or the handoff. The sibling Ads Manager uses a different Firebase project and its credentials must not be mixed with this app.
 
@@ -23,14 +23,25 @@ Firebase console setup remains necessary: register the web app, enable Email/Pas
 
 Next.js embeds `NEXT_PUBLIC_*` values at build time. Rebuild after changing them on Vercel. Server-only settings are runtime secrets. Keep separate Vercel Development/Preview/Production values and exact `APP_URL` origins. Do not authorize arbitrary request origins to make preview deployments work.
 
-## Reserved for later scope phases — not active integrations
+## Cloudinary configuration — selected and verified
+
+The supplied credentials and preset are stored only in ignored `.env.local`. `src/lib/cloudinary/config.ts` validates them; `src/lib/cloudinary/server.ts` provides a lazy server-only configuration loader. The local environment check validates all five values without contacting Cloudinary. No client component should receive the API secret or signed upload parameters before application authorization.
+
+On 7 September 2026, `npm run cloudinary:check` made a read-only request to the official Cloudinary Admin API. Credentials were accepted and the exact configured preset exists. It currently reports **unsigned** and does **not** set authenticated delivery. No preset was changed and no files were uploaded. This verifies account access, not private upload/download behavior.
+
+The E4 implementation must use signed server uploads and explicitly set `type=authenticated`. Configure the dedicated preset as signed-only before enabling it for financial evidence. Authorize downloads against the parent record before issuing short-lived private downloads or proxying content. A normal signed CDN URL is not automatically an expiring URL. Cloudinary documents [authenticated media and time-limited private downloads](https://cloudinary.com/documentation/control_access_to_media) and [signed preset parameter precedence](https://cloudinary.com/documentation/upload_presets).
+
+Store images as image assets. Plan to store PDFs and office documents as raw original evidence (including the extension in their public ID) rather than converting or publishing their content. Test representative file types and the account's PDF/document delivery settings during E4; Cloudinary notes [PDF delivery restrictions on free accounts](https://support.cloudinary.com/hc/en-us/articles/20970529312146-How-to-Upload-Manage-and-Deliver-PDF-Files). Never enable public receipt delivery to work around a restriction.
+
+## Variables for attachments and later integrations
 
 | Variable | Required when | Notes |
 |---|---|---|
-| `ATTACHMENT_PROVIDER` | Private receipt storage phase | Choose `firebase_storage` or `cloudinary`; blank until provider is confirmed. |
-| `FIREBASE_STORAGE_BUCKET` | Firebase Storage selected | The dedicated project's bucket ID, taken from its web configuration. Keep private; authorized server delivery only. |
-| `CLOUDINARY_CLOUD_NAME` | Cloudinary selected | Existing Davo account can be used only after confirming private document delivery and a separate asset folder. |
-| `CLOUDINARY_API_KEY`, `CLOUDINARY_API_SECRET` | Cloudinary selected | Signed server uploads and private/authenticated assets. Do not reuse a public unsigned upload preset for receipts. |
+| `ATTACHMENT_PROVIDER` | Set now | `cloudinary`, selected by the user. |
+| `FIREBASE_STORAGE_BUCKET` | Unused | Retained if imported from Firebase web config; no Firebase Storage calls or bucket setup needed for attachments. |
+| `CLOUDINARY_CLOUD_NAME` | Set now | The supplied Cloudinary product environment; keep evidence under a dedicated app prefix. |
+| `CLOUDINARY_UPLOAD_PRESET` | Set now | The supplied preset name; existence verified. Signed-only/private configuration remains an E4 task. |
+| `CLOUDINARY_API_KEY`, `CLOUDINARY_API_SECRET` | Set now | Server-only values for signed uploads/API access; never prefix with `NEXT_PUBLIC_`. Upload/download endpoints are not yet implemented. |
 | `SMTP_HOST`, `SMTP_PORT` | Reminder email phase | Obtain SMTP settings from Davo's mail hosting administrator/cPanel. |
 | `SMTP_SECURE` | Reminder email phase | `true` for implicit TLS, normally port 465; `false` for STARTTLS, normally port 587. Require TLS in the future transporter. |
 | `SMTP_USER`, `SMTP_PASS` | Reminder email phase | Server-only sender mailbox credentials. |
@@ -42,6 +53,8 @@ Reminder recipients, lead days (7/3/1), company timezone (`Africa/Lagos`), fisca
 ## Local setup utilities
 
 `npm run env:check` reports **only variable names/status**, syntax/configuration issues, and whether client/server projects agree. It does not authenticate with Firebase or prove the credentials work remotely.
+
+`npm run cloudinary:check` makes one authenticated **read-only** request to the official Cloudinary Admin API for the configured preset. It prints only the success/status and preset access mode, never credentials or raw provider errors. It uploads nothing and changes no account settings. Rerun only when configuration changes or an integration check needs it.
 
 `node scripts/prepare-env.mjs --service-account ./YOUR-DEDICATED-firebase-adminsdk.json` organizes an existing local file, imports a quoted Firebase web config pasted into it, and fills matching Admin values from the explicitly named JSON. It never evaluates JavaScript, never contacts Firebase, and never reads the sibling app. The original `.env.local` is retained once as `.env.local.before-setup` (also ignored). Review local values after importing; do not run this tool against unrelated projects.
 

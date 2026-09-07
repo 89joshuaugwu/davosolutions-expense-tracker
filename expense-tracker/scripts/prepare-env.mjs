@@ -28,7 +28,8 @@ const groups = [
   ["Application origin. Set https://expenses.davosolutions.com in production.", ["APP_URL"]],
   ["Firebase web app identifiers (public). This expense app's dedicated project only.", ["NEXT_PUBLIC_FIREBASE_API_KEY", "NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN", "NEXT_PUBLIC_FIREBASE_PROJECT_ID", "NEXT_PUBLIC_FIREBASE_APP_ID"]],
   ["Firebase Admin credentials (SERVER ONLY). Never use a NEXT_PUBLIC_ prefix here.", ["FIREBASE_PROJECT_ID", "FIREBASE_CLIENT_EMAIL", "FIREBASE_PRIVATE_KEY"]],
-  ["Future private receipt storage. Not wired yet; provider selection remains pending.", ["ATTACHMENT_PROVIDER", "FIREBASE_STORAGE_BUCKET", "CLOUDINARY_CLOUD_NAME", "CLOUDINARY_API_KEY", "CLOUDINARY_API_SECRET"]],
+  ["Cloudinary selected for private images, PDFs and documents. Upload/download workflows pending; all credentials server-only.", ["ATTACHMENT_PROVIDER", "CLOUDINARY_CLOUD_NAME", "CLOUDINARY_UPLOAD_PRESET", "CLOUDINARY_API_KEY", "CLOUDINARY_API_SECRET"]],
+  ["Unused Firebase Storage bucket retained from web config. The app uses Cloudinary for attachments.", ["FIREBASE_STORAGE_BUCKET"]],
   ["Future bill-reminder email. Not wired yet. Port 465 uses SMTP_SECURE=true; 587 uses false with STARTTLS.", ["SMTP_HOST", "SMTP_PORT", "SMTP_SECURE", "SMTP_USER", "SMTP_PASS", "SMTP_FROM"]],
   ["Future authenticated scheduled job. Not wired yet. Generate a random server-only secret before deployment.", ["CRON_SECRET"]],
 ];

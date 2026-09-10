@@ -40,10 +40,9 @@ export const createExpenseSchema = z
      */
     idempotencyKey: z.string().uuid("Idempotency key must be a UUID."),
     /**
-     * Reserved for E4: attachment IDs pre-authorised by the upload intent flow.
-     * Empty array is accepted; non-empty is blocked until E4 is implemented.
+     * Attachment IDs pre-authorised by the upload intent flow.
      */
-    attachmentIds: z.array(z.string().max(128)).max(10).default([]),
+    attachmentIds: z.array(z.string().max(128)).max(5, "Maximum 5 attachments allowed.").default([]),
   })
   .strict();
 

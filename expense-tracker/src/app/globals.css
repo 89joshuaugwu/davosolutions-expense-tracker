@@ -512,3 +512,21 @@ table { border-collapse: collapse; width: 100%; text-align: left; }
 }
 @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; scroll-behavior: auto !important; } }
 @media print { .sidebar, .topbar, .preview-notice, .heading-actions, .app-footer { display: none !important; } .app-main { margin: 0; } .main-content { padding: 0; } body { background: white; } .panel { break-inside: avoid; box-shadow: none; } }
+
+/* --- Attachment Upload --- */
+.attachment-upload { margin-top: var(--space-3); }
+.attachment-list { list-style: none; padding: 0; margin: 0 0 var(--space-3) 0; display: flex; flex-direction: column; gap: var(--space-2); }
+.attachment-item { display: flex; align-items: center; justify-content: space-between; padding: var(--space-2) var(--space-3); background: var(--bg-surface); border: 1px solid var(--border-subtle); border-radius: var(--radius-md); font-size: var(--text-sm); }
+.attachment-item.uploading { opacity: 0.7; }
+.attachment-item.error { border-color: var(--danger); }
+.attachment-info { display: flex; align-items: center; gap: var(--space-2); overflow: hidden; }
+.attachment-info .filename { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 200px; }
+.attachment-info .filesize { color: var(--text-muted); font-size: var(--text-xs); }
+.attachment-actions { display: flex; align-items: center; gap: var(--space-2); }
+.attachment-actions button { background: none; border: none; padding: var(--space-1); cursor: pointer; color: var(--text-muted); border-radius: var(--radius-sm); display: flex; align-items: center; justify-content: center; }
+.attachment-actions button:hover { background: var(--bg-hover); color: var(--text-base); }
+.dropzone { border: 2px dashed var(--border-subtle); border-radius: var(--radius-md); padding: var(--space-4); text-align: center; transition: all 0.2s ease; background: var(--bg-surface); }
+.dropzone.active { border-color: var(--primary); background: var(--primary-bg); }
+.dropzone-label { display: flex; flex-direction: column; align-items: center; gap: var(--space-2); cursor: pointer; color: var(--text-muted); font-size: var(--text-sm); margin: 0; }
+.dropzone-label:hover { color: var(--primary); }
+

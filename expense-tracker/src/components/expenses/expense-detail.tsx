@@ -2,9 +2,9 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
-import { AlertCircle, ArrowLeft, Calendar, Check, Loader2, LockKeyhole, Trash2 } from "lucide-react";
+import { AlertCircle, ArrowLeft, Calendar, Check, Loader2, LockKeyhole, Trash2, Paperclip, FileText, Image as ImageIcon } from "lucide-react";
 import { CURRENCIES, formatMoney, type CurrencyCode } from "@/domain/money";
-import type { Frequency } from "@/domain/models";
+import type { Frequency, AttachmentReference } from "@/domain/models";
 
 interface ExpenseDetailData {
   id: string;
@@ -25,6 +25,7 @@ interface ExpenseDetailData {
   archivedAt: string | null;
   archivedBy: string | null;
   revision: number;
+  attachments?: AttachmentReference[];
 }
 
 const FREQUENCY_LABELS: Record<string, string> = {
@@ -190,10 +191,29 @@ export function ExpenseDetail({ expenseId, isSuperAdmin }: { expenseId: string; 
 
         <div className="detail-field">
           <label>Attachments</label>
-          <div className="attachment-placeholder">
-            <LockKeyhole size={14} />
-            <span>Attachment support coming in next phase.</span>
-          </div>
+          {expense.attachments && expense.attachments.length > 0 ? (
+            <ul className="attachment-list">
+              {expense.attachments.map((att) => (
+                <li key={att.id} className="attachment-item">
+                  <div className="attachment-info">
+                    {att.contentType.startsWith("image/") ? <ImageIcon size={16} /> : <FileText size={16} />}
+                    <span className="filename" title={att.fileName}>{att.fileName}</span>
+                    <span className="filesize">({Math.round(att.sizeBytes / 1024)} KB)</span>
+                  </div>
+                  <div className="attachment-actions">
+                    <a href={`/api/attachments/${att.id}`} target="_blank" rel="noopener noreferrer" className="button secondary" style={{ padding: "var(--space-1) var(--space-2)", fontSize: "var(--text-xs)" }}>
+                      Download
+                    </a>
+                  </div>
+                </li>
+              ))}
+            </ul>
+          ) : (
+            <div className="attachment-placeholder">
+              <Paperclip size={14} />
+              <span>No attachments</span>
+            </div>
+          )}
         </div>
       </div>
 

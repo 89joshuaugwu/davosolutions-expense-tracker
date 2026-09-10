@@ -19,6 +19,7 @@ import {
 } from "../../lib/server/repositories/expenses";
 import { canonicalExpenseHash } from "./idempotency";
 import type { CreateExpenseInput, CorrectExpenseInput, ArchiveExpenseInput } from "./schema";
+import { verifyAttachmentsUpload } from "../../lib/server/repositories/attachments";
 
 export class ExpenseServiceError extends Error {
   constructor(
@@ -77,10 +78,8 @@ export async function createExpense(
   }
   const currency = input.currency as CurrencyCode;
 
-  // 5. Attachments are blocked until E4
-  if (input.attachmentIds.length > 0) {
-    throw new ExpenseServiceError("ATTACHMENTS_NOT_READY", "Attachment support is not yet available.");
-  }
+  // 5. Verify attachments
+  const attachments = await verifyAttachmentsUpload(input.attachmentIds, user.uid);
 
   // 6. Run the atomic transaction
   const db = getAdminDb();
@@ -150,7 +149,7 @@ export async function createExpense(
       frequency: input.frequency,
       expenseKind: "general",
       notes: input.notes,
-      attachments: [],
+      attachments: attachments,
       visibleToUserIds: [],
       createdBy: user.uid,
       archivedAt: null,
@@ -187,6 +186,14 @@ export async function createExpense(
 
     // Lock base currency after first monetary record
     lockBaseCurrencyInTransaction(transaction, settings);
+
+    // Update attachments to link them to this expense
+    for (const att of attachments) {
+      transaction.update(db.collection("attachments").doc(att.id), {
+        associatedRecordId: expenseId,
+        associatedRecordKind: "expense",
+      });
+    }
 
     return {
       id: expenseId,

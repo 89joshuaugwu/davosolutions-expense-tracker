@@ -2,10 +2,11 @@
 
 import { useState, useCallback, useId } from "react";
 import Link from "next/link";
-import { AlertCircle, Check, Loader2, PaperclipIcon, Send } from "lucide-react";
+import { AlertCircle, Check, Loader2, Send } from "lucide-react";
 import type { Category } from "@/domain/models";
 import type { CurrencyCode } from "@/domain/money";
 import { CURRENCIES } from "@/domain/money";
+import { AttachmentUpload, type AttachmentItem } from "../attachments/attachment-upload";
 
 interface Props {
   categories: Category[];
@@ -26,6 +27,7 @@ export function NewExpenseForm({ categories, baseCurrency, enabledCurrencies, us
   const [date, setDate] = useState(new Date().toISOString().slice(0, 10));
   const [frequency, setFrequency] = useState<string>("one_time");
   const [notes, setNotes] = useState("");
+  const [attachments, setAttachments] = useState<AttachmentItem[]>([]);
   const [fieldErrors, setFieldErrors] = useState<FieldErrors>({});
   const [globalError, setGlobalError] = useState("");
   const [formState, setFormState] = useState<FormState>("idle");
@@ -60,7 +62,7 @@ export function NewExpenseForm({ categories, baseCurrency, enabledCurrencies, us
             frequency,
             notes: notes.trim(),
             idempotencyKey,
-            attachmentIds: [],
+            attachmentIds: attachments.filter((a) => a.status === "success").map((a) => a.id),
           }),
         });
 
@@ -82,7 +84,7 @@ export function NewExpenseForm({ categories, baseCurrency, enabledCurrencies, us
         setFormState("error");
       }
     },
-    [title, amount, currency, categoryId, date, frequency, notes, formState, resetErrors],
+    [title, amount, currency, categoryId, date, frequency, notes, attachments, formState, resetErrors],
   );
 
   // Only show base currency in dropdown for now (foreign currencies need M2)
@@ -271,11 +273,13 @@ export function NewExpenseForm({ categories, baseCurrency, enabledCurrencies, us
         </div>
 
         <div className="form-group">
-          <label>Attachment</label>
-          <div className="attachment-placeholder">
-            <PaperclipIcon size={16} />
-            <span>Attachment support is coming in the next phase.</span>
-          </div>
+          <label>Attachments (optional, max 5)</label>
+          <AttachmentUpload 
+            attachments={attachments}
+            onChange={setAttachments}
+            maxFiles={5}
+            disabled={formState === "submitting"}
+          />
         </div>
       </div>
 

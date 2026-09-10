@@ -83,9 +83,26 @@ export function ExpenseList({ initialMonth }: Props) {
   );
 
   useEffect(() => {
-    void fetchExpenses();
-    // eslint-disable-next-line react-hooks/set-state-in-effect
-  }, [fetchExpenses]);
+    let cancelled = false;
+    (async () => {
+      setLoading(true);
+      setError("");
+      try {
+        const params = new URLSearchParams();
+        if (month) params.set("month", month);
+        const response = await fetch(`/api/expenses?${params.toString()}`);
+        const data = await response.json();
+        if (cancelled) return;
+        if (!response.ok) { setError(data.error || "Failed to load expenses."); return; }
+        setItems(data.items);
+        setNextCursor(data.nextCursor);
+        if (data.categories) setCategories(data.categories);
+        if (data.baseCurrency) setBaseCurrency(data.baseCurrency);
+      } catch { if (!cancelled) setError("Network error. Please check your connection."); }
+      finally { if (!cancelled) { setLoading(false); setLoadingMore(false); } }
+    })();
+    return () => { cancelled = true; };
+  }, [month]);
 
   const categoryName = (id: string) => categories.find((c) => c.id === id)?.name ?? "—";
 

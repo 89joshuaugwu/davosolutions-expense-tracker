@@ -87,14 +87,14 @@ describe("createExpenseSchema", () => {
   });
 
   it("defaults notes to empty string", () => {
-    const { notes: _, ...withoutNotes } = valid;
+    const { notes: _notes, ...withoutNotes } = valid;
     const result = createExpenseSchema.safeParse(withoutNotes);
     assert.equal(result.success, true);
     if (result.success) assert.equal(result.data.notes, "");
   });
 
   it("defaults attachmentIds to empty array", () => {
-    const { attachmentIds: _, ...withoutAttachments } = valid;
+    const { attachmentIds: _ids, ...withoutAttachments } = valid;
     const result = createExpenseSchema.safeParse(withoutAttachments);
     assert.equal(result.success, true);
     if (result.success) assert.deepEqual(result.data.attachmentIds, []);

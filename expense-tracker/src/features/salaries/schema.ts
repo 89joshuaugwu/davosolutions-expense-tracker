@@ -1,6 +1,10 @@
 import { z } from "zod";
-import { isValidCurrency } from "../../domain/money";
-import { parseDateOnly } from "../../domain/dates";
+import { CURRENCIES } from "../../domain/money";
+import { assertDateOnly } from "../../domain/dates";
+
+function isValidDate(val: string) {
+  try { assertDateOnly(val); return true; } catch { return false; }
+}
 
 const amountRegex = /^(0|[1-9]\d*)(?:\.\d+)?$/;
 
@@ -20,9 +24,9 @@ export const createSalarySchema = z
     currency: z
       .string()
       .min(1, "Currency is required.")
-      .refine((val) => isValidCurrency(val), "Unsupported currency."),
+      .refine((val) => Object.hasOwn(CURRENCIES, val), "Unsupported currency."),
     status: z.enum(["pending", "paid"], {
-      errorMap: () => ({ message: "Status must be pending or paid." }),
+      error: "Status must be pending or paid."
     }),
     paymentDate: z.string().optional(),
     categoryId: z.string().min(1, "Category is required.").max(128),
@@ -44,7 +48,7 @@ export const createSalarySchema = z
   .refine(
     (data) => {
       if (data.paymentDate) {
-        return parseDateOnly(data.paymentDate) !== null;
+        return isValidDate(data.paymentDate);
       }
       return true;
     },
@@ -71,7 +75,7 @@ export const correctSalarySchema = z
     workerName: z.string().min(1).max(100).optional(),
     period: z.string().regex(/^\d{4}-\d{2}$/).optional(),
     amount: z.string().regex(amountRegex).optional(),
-    currency: z.string().refine((val) => isValidCurrency(val)).optional(),
+    currency: z.string().refine((val) => Object.hasOwn(CURRENCIES, val)).optional(),
     categoryId: z.string().min(1).max(128).optional(),
     notes: z.string().max(2000).optional(),
     paymentDate: z.string().optional(),
@@ -82,7 +86,7 @@ export const correctSalarySchema = z
   .strict()
   .refine(
     (data) => {
-      if (data.paymentDate) return parseDateOnly(data.paymentDate) !== null;
+      if (data.paymentDate) return isValidDate(data.paymentDate);
       return true;
     },
     { message: "Payment date must be a valid YYYY-MM-DD date.", path: ["paymentDate"] }
@@ -117,7 +121,7 @@ export type ArchiveSalaryInput = z.infer<typeof archiveSalarySchema>;
 
 export const paySalarySchema = z
   .object({
-    paymentDate: z.string().refine((val) => parseDateOnly(val) !== null, "Must be a valid YYYY-MM-DD date."),
+    paymentDate: z.string().refine((val) => isValidDate(val), "Must be a valid YYYY-MM-DD date."),
     expectedRevision: z.number().int().nonnegative(),
   })
   .strict();

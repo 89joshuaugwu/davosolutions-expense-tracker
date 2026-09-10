@@ -1,6 +1,7 @@
 import "server-only";
 
-import { requireSuperAdmin } from "@/lib/auth/server";
+import { getSessionUser, AuthorizationError } from "@/lib/auth/session";
+import { isSuperAdmin } from "@/lib/auth/permissions";
 import { 
   getCompanySettings, 
   getOrCreateDefaultSettings, 
@@ -15,13 +16,19 @@ import type { CompanySettings, ExchangeRate } from "@/domain/models";
 import type { UpdateSettingsDto, CreateExchangeRateDto } from "./schema";
 import { DEFAULT_CURRENCY, type CurrencyCode } from "@/domain/money";
 
+async function verifySuperAdmin() {
+  const user = await getSessionUser();
+  if (!isSuperAdmin(user)) throw new AuthorizationError();
+  return user;
+}
+
 export class SettingsService {
   /**
    * Returns current company settings (creates defaults if missing).
    * Accessible by Super Admin. (Other roles might need this for read-only via other services, but settings page is admin-only).
    */
   async getSettings(): Promise<CompanySettings> {
-    await requireSuperAdmin();
+    await verifySuperAdmin();
     return await getOrCreateDefaultSettings();
   }
 
@@ -29,10 +36,10 @@ export class SettingsService {
    * Updates company settings.
    */
   async updateSettings(dto: UpdateSettingsDto): Promise<CompanySettings> {
-    const user = await requireSuperAdmin();
+    const user = await verifySuperAdmin();
     return await updateCompanySettings({
       ...dto,
-      updatedBy: user.id,
+      updatedBy: user.uid,
     });
   }
 
@@ -40,7 +47,7 @@ export class SettingsService {
    * Returns all active exchange rates against the base currency.
    */
   async getActiveRates(): Promise<ExchangeRate[]> {
-    await requireSuperAdmin();
+    await verifySuperAdmin();
     return await getActiveExchangeRates();
   }
 
@@ -48,7 +55,7 @@ export class SettingsService {
    * Returns exchange rate history for a specific currency converting to the base currency.
    */
   async getRateHistory(fromCurrency: CurrencyCode): Promise<ExchangeRate[]> {
-    await requireSuperAdmin();
+    await verifySuperAdmin();
     const settings = await getOrCreateDefaultSettings();
     return await getExchangeRateHistory(fromCurrency, settings.baseCurrency);
   }
@@ -57,7 +64,7 @@ export class SettingsService {
    * Adds a new exchange rate.
    */
   async addNewExchangeRate(dto: CreateExchangeRateDto): Promise<ExchangeRate> {
-    const user = await requireSuperAdmin();
+    const user = await verifySuperAdmin();
     const settings = await getOrCreateDefaultSettings();
 
     if (dto.toCurrency !== settings.baseCurrency) {
@@ -76,7 +83,7 @@ export class SettingsService {
       dto.toCurrency,
       dto.rate,
       dto.effectiveFrom as any,
-      user.id
+      user.uid
     );
   }
 }

@@ -3,7 +3,8 @@
 import { useEffect, useState, useCallback } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
-import type { RevenueSource, CurrencyCode } from "@/domain/models";
+import type { RevenueSource } from "@/domain/models";
+import type { CurrencyCode } from "@/domain/money";
 
 interface RevenueListItem {
   id: string;

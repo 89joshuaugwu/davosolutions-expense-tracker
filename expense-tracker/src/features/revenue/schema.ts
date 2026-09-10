@@ -1,6 +1,4 @@
 import { z } from "zod";
-import { dateOnlySchema } from "@/domain/dates";
-import { currencySchema, amountStringSchema } from "@/domain/money";
 
 export const createRevenueSourceSchema = z.object({
   name: z.string().min(2).max(100),
@@ -20,9 +18,9 @@ export type UpdateRevenueSourceDto = z.infer<typeof updateRevenueSourceSchema>;
 
 export const createRevenueSchema = z.object({
   sourceId: z.string().min(1),
-  date: dateOnlySchema,
-  amount: amountStringSchema,
-  currency: currencySchema,
+  date: z.string().trim().regex(/^\d{4}-\d{2}-\d{2}$/, "Date must use YYYY-MM-DD."),
+  amount: z.string().trim().regex(/^(0|[1-9]\d*)(?:\.\d+)?$/, "Enter a valid positive number.").max(32),
+  currency: z.string().trim().min(1).max(10),
   description: z.string().max(200).optional().default(""),
   notes: z.string().max(1000).optional().default(""),
   attachmentIds: z.array(z.string()).max(5).default([]),
@@ -33,7 +31,7 @@ export type CreateRevenueDto = z.infer<typeof createRevenueSchema>;
 
 export const correctRevenueSchema = z.object({
   sourceId: z.string().min(1).optional(),
-  date: dateOnlySchema.optional(),
+  date: z.string().trim().regex(/^\d{4}-\d{2}-\d{2}$/).optional(),
   description: z.string().max(200).optional(),
   notes: z.string().max(1000).optional(),
   expectedRevision: z.number().int().min(0),

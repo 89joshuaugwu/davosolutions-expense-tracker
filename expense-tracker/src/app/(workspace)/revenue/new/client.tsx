@@ -4,6 +4,8 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import type { RevenueSource, CompanySettings } from "@/domain/models";
 
+import type { CurrencyCode } from "@/domain/money";
+
 // Use crypto.randomUUID() if available, otherwise a simple fallback
 function generateIdempotencyKey() {
   if (typeof crypto !== "undefined" && crypto.randomUUID) {
@@ -24,7 +26,7 @@ export function RevenueFormClient({
   const [date, setDate] = useState(() => new Date().toISOString().split("T")[0]);
   const [sourceId, setSourceId] = useState("");
   const [amount, setAmount] = useState("");
-  const [currency, setCurrency] = useState(settings.baseCurrency);
+  const [currency, setCurrency] = useState<CurrencyCode>(settings.baseCurrency);
   const [description, setDescription] = useState("");
   const [notes, setNotes] = useState("");
   const [idempotencyKey] = useState(generateIdempotencyKey);
@@ -142,7 +144,7 @@ export function RevenueFormClient({
             <select
               required
               value={currency}
-              onChange={(e) => setCurrency(e.target.value)}
+              onChange={(e) => setCurrency(e.target.value as CurrencyCode)}
               className="input-field"
               disabled={loading}
             >

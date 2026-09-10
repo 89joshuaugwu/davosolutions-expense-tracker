@@ -2,10 +2,10 @@ import "server-only";
 
 import { getAdminDb } from "@/lib/firebase/admin";
 import type { UserProfile } from "@/lib/auth/model";
-import { checkIdempotencyInTransaction } from "@/lib/server/repositories/idempotency";
+import { checkIdempotency } from "@/lib/server/repositories/idempotency";
 import { createTransportInTransaction, getTransportList, getTransportLog, updateTransportInTransaction, type TransportListItem } from "@/lib/server/repositories/transport";
 import { createTransportSchema, correctTransportSchema, parseTransportAmounts, type CreateTransportDto, type CorrectTransportDto } from "./schema";
-import { getExchangeRateForDay } from "@/lib/server/repositories/exchange-rates";
+import { getEffectiveRate } from "@/lib/server/repositories/exchange-rates";
 import { getCompanySettings } from "@/lib/server/repositories/settings";
 import { canViewOperationalKind, isSuperAdmin } from "@/lib/auth/permissions";
 
@@ -31,7 +31,7 @@ export class TransportService {
     let rateDate = data.date;
 
     if (data.currency !== settings.baseCurrency) {
-      const fx = await getExchangeRateForDay(data.currency, settings.baseCurrency, data.date);
+      const fx = await getEffectiveRate(data.currency, settings.baseCurrency, data.date);
       if (!fx) throw new Error(`No exchange rate found for ${data.currency} on ${data.date}`);
       rateSnapshot = fx.rate;
       rateDate = fx.effectiveFrom;
@@ -39,27 +39,20 @@ export class TransportService {
       baseAmountMinor = Math.round(totalMinor * rateNum);
     }
 
-    const db = getAdminDb();
-    
     // Check idempotency outside transaction to quickly reject duplicates without read-locking
-    const existingReceipt = await db
-      .collection("idempotency")
-      .doc(`${user.id}_createTransport_${data.idempotencyKey}`)
-      .get();
+    const { existing, conflict } = await checkIdempotency(`${user.uid}_createTransport_${data.idempotencyKey}`, "dummy-hash");
       
-    if (existingReceipt.exists) {
-      const receiptData = existingReceipt.data();
-      if (receiptData?.requestHash) {
-        return receiptData.returnPayload as { id: string };
-      }
+    if (conflict) {
+      throw new Error("Idempotency conflict");
+    }
+    if (existing) {
+      return { id: existing };
     }
 
-    return db.runTransaction(async (t) => {
-      // Re-check inside transaction for race conditions
-      const receiptRef = db.collection("idempotency").doc(`${user.id}_createTransport_${data.idempotencyKey}`);
-      checkIdempotencyInTransaction(t, receiptRef, "dummy-hash"); 
+    const db = getAdminDb();
 
-      // Check category
+    return db.runTransaction(async (t) => {
+      // Re-read category inside transaction
       const catRef = db.collection("categories").doc(data.categoryId);
       const catSnap = await t.get(catRef);
       if (!catSnap.exists || catSnap.data()?.isActive !== true) {
@@ -84,17 +77,15 @@ export class TransportService {
           rateDate: rateDate,
           notes: data.notes || "",
           attachments: [], // Needs Cloudinary adapter logic mapped before/after if we support attachment objects
-          visibleToUserIds: [user.id],
-          createdBy: user.id,
+          visibleToUserIds: [user.uid],
+          createdBy: user.uid,
           archivedAt: null,
           archivedBy: null,
         },
+        user.role,
         data.idempotencyKey,
         {} // We will inject ID below
       );
-
-      // Mutate the receipt return payload before transaction commits
-      t.update(receiptRef, { returnPayload: { id: transportId } });
 
       return { id: transportId };
     });
@@ -110,7 +101,7 @@ export class TransportService {
       return { logs: [] };
     }
 
-    const userIdFilter = isSuperAdmin(user) ? undefined : user.id;
+    const userIdFilter = isSuperAdmin(user) ? undefined : user.uid;
 
     const items = await getTransportList({
       month,
@@ -134,7 +125,7 @@ export class TransportService {
     const log = await getTransportLog(id);
     if (!log) return null;
 
-    if (!isSuperAdmin(user) && !log.visibleToUserIds.includes(user.id)) {
+    if (!isSuperAdmin(user) && !log.visibleToUserIds.includes(user.uid)) {
       return null;
     }
 
@@ -146,6 +137,10 @@ export class TransportService {
 
     const data = correctTransportSchema.parse(input);
     const db = getAdminDb();
+
+    if (data.action !== "archive") {
+      throw new Error("Only archive is supported right now");
+    }
 
     await db.runTransaction(async (t) => {
       const logRef = db.collection("transportLogs").doc(id);
@@ -162,9 +157,10 @@ export class TransportService {
       }
 
       updateTransportInTransaction(t, id, existing, {
-        action: data.action,
+        action: "archive" as const,
         reason: data.reason,
-        actorId: user.id,
+        actorId: user.uid,
+        actorRole: user.role,
       });
     });
   }

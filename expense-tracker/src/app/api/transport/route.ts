@@ -44,10 +44,10 @@ export async function POST(request: NextRequest) {
     const result = await TransportService.logTransport(user, body);
     
     return NextResponse.json(result, { status: 201 });
-  } catch (error) {
+  } catch (error: any) {
     console.error("POST /api/transport error:", error);
     if (error instanceof ZodError) {
-      return NextResponse.json({ error: "Validation failed", details: error.errors }, { status: 400 });
+      return NextResponse.json({ error: "Validation failed", details: error.issues }, { status: 400 });
     }
     const message = error instanceof Error ? error.message : "Unknown error";
     // Check for conflict

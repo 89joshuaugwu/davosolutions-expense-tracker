@@ -4,7 +4,6 @@ import { useEffect, useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import type { TransportLog } from "@/domain/models";
 import { formatMoney } from "@/domain/money";
-import { format } from "date-fns";
 import { AlertTriangle, ArrowLeft } from "lucide-react";
 
 export function TransportDetail({ id, isSuperAdmin }: { id: string; isSuperAdmin: boolean }) {
@@ -68,6 +67,16 @@ export function TransportDetail({ id, isSuperAdmin }: { id: string; isSuperAdmin
     }
   };
 
+  const formatDate = (isoStr: string) => {
+    return new Intl.DateTimeFormat("en-US", {
+      month: "short",
+      day: "numeric",
+      year: "numeric",
+      hour: "numeric",
+      minute: "numeric"
+    }).format(new Date(isoStr));
+  };
+
   if (loading) return <div className="p-8 text-center text-gray-500">Loading details...</div>;
   if (error) return <div className="p-4 bg-red-50 text-red-700 rounded-md m-4">{error}</div>;
   if (!log) return null;
@@ -92,7 +101,7 @@ export function TransportDetail({ id, isSuperAdmin }: { id: string; isSuperAdmin
           <div>
             <h3 className="text-sm font-semibold text-red-800">Record Archived</h3>
             <p className="text-sm text-red-700 mt-1">
-              This record was archived on {format(new Date(log.archivedAt), "PPpp")}. Its financial effect has been reversed.
+              This record was archived on {formatDate(log.archivedAt)}. Its financial effect has been reversed.
             </p>
           </div>
         </div>
@@ -168,7 +177,7 @@ export function TransportDetail({ id, isSuperAdmin }: { id: string; isSuperAdmin
               </div>
               <div>
                 <span className="text-xs font-medium text-gray-500 uppercase tracking-wider block mb-1">Created At</span>
-                <span className="text-sm text-gray-900">{format(new Date(log.createdAt), "MMM d, yyyy HH:mm")}</span>
+                <span className="text-sm text-gray-900">{formatDate(log.createdAt)}</span>
               </div>
               <div>
                 <span className="text-xs font-medium text-gray-500 uppercase tracking-wider block mb-1">Revision</span>

@@ -57,6 +57,7 @@ function docToTransport(id: string, data: FirebaseFirestore.DocumentData): Trans
 export function createTransportInTransaction(
   t: Transaction,
   data: Omit<TransportLog, "id" | "createdAt" | "updatedAt" | "revision">,
+  userRole: "super_admin" | "secretary",
   idempotencyKey: string,
   receiptReturnPayload: unknown
 ): string {
@@ -76,16 +77,20 @@ export function createTransportInTransaction(
 
   // Create unified ledger posting for the total amount
   const posting = createLedgerPosting({
-    type: "expense",
     sourceId: transportId,
     sourceKind: "transport",
-    amountMinor: data.baseAmountMinor,
-    date: data.date,
+    postedOn: data.date,
     categoryId: data.categoryId,
-    createdBy: data.createdBy,
+    revenueSourceId: null,
+    originalAmountMinor: data.originalAmountMinor,
+    currency: data.currency,
+    baseAmountMinor: data.baseAmountMinor,
+    baseCurrency: data.baseCurrency,
+    exchangeRateSnapshot: data.exchangeRateSnapshot,
+    rateDate: data.rateDate,
   });
 
-  const postingRef = db.collection("ledgerEntries").doc();
+  const postingRef = db.collection("ledgerEntries").doc(posting.id);
   t.set(postingRef, {
     ...posting,
     createdAt: now,
@@ -93,17 +98,16 @@ export function createTransportInTransaction(
 
   // Create audit event
   const auditEvent: AuditEvent = {
-    action: "create",
-    entity: "transport",
-    entityId: transportId,
-    actorId: data.createdBy,
+    action: "record.create",
+    actor: { uid: data.createdBy, role: userRole },
+    target: { collection: "transportLogs", id: transportId },
     reason: "New transport log",
-    snapshot: data,
+    after: data,
   };
   appendAuditInTransaction(t, auditEvent);
 
   // Set idempotency receipt
-  setIdempotencyReceiptInTransaction(t, data.createdBy, "createTransport", idempotencyKey, receiptReturnPayload);
+  setIdempotencyReceiptInTransaction(t, `${data.createdBy}_createTransport_${idempotencyKey}`, "dummy-hash", transportId);
 
   return transportId;
 }
@@ -172,7 +176,7 @@ export function updateTransportInTransaction(
   t: Transaction,
   transportId: string,
   existingTransport: TransportLog,
-  update: { action: "archive"; reason: string; actorId: string }
+  update: { action: "archive"; reason: string; actorId: string; actorRole: "super_admin" | "secretary" }
 ) {
   const db = getAdminDb();
   const transportRef = db.collection("transportLogs").doc(transportId);
@@ -189,25 +193,30 @@ export function updateTransportInTransaction(
     });
 
     const posting = createLedgerPosting({
-      type: "reversal",
       sourceId: transportId,
       sourceKind: "transport",
-      amountMinor: existingTransport.baseAmountMinor,
-      date: existingTransport.date,
+      postedOn: existingTransport.date,
       categoryId: existingTransport.categoryId,
-      createdBy: update.actorId,
+      revenueSourceId: null,
+      originalAmountMinor: existingTransport.originalAmountMinor,
+      currency: existingTransport.currency,
+      baseAmountMinor: existingTransport.baseAmountMinor,
+      baseCurrency: existingTransport.baseCurrency,
+      exchangeRateSnapshot: existingTransport.exchangeRateSnapshot,
+      rateDate: existingTransport.rateDate,
+      archivedAt: new Date().toISOString(), // Simulating server time conceptually for ID purposes
     });
 
-    const postingRef = db.collection("ledgerEntries").doc();
-    t.set(postingRef, { ...posting, createdAt: now });
+    const postingRef = db.collection("ledgerEntries").doc(posting.id);
+    t.update(postingRef, { archivedAt: now });
 
     const auditEvent: AuditEvent = {
-      action: "archive",
-      entity: "transport",
-      entityId: transportId,
-      actorId: update.actorId,
+      action: "record.archive",
+      actor: { uid: update.actorId, role: update.actorRole },
+      target: { collection: "transportLogs", id: transportId },
       reason: update.reason,
-      snapshot: { archivedAt: "server-timestamp" },
+      before: existingTransport as unknown as Record<string, unknown>,
+      after: { ...existingTransport, archivedAt: "server-timestamp" } as unknown as Record<string, unknown>,
     };
     appendAuditInTransaction(t, auditEvent);
   }

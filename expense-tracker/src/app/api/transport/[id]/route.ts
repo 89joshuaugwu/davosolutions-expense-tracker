@@ -46,10 +46,10 @@ export async function PATCH(
     await TransportService.correctLog(user, id, body);
     
     return NextResponse.json({ success: true });
-  } catch (error) {
+  } catch (error: any) {
     console.error("PATCH /api/transport/[id] error:", error);
     if (error instanceof ZodError) {
-      return NextResponse.json({ error: "Validation failed", details: error.errors }, { status: 400 });
+      return NextResponse.json({ error: "Validation failed", details: error.issues }, { status: 400 });
     }
     const message = error instanceof Error ? error.message : "Unknown error";
     if (message.includes("Conflict") || message.includes("already archived")) {

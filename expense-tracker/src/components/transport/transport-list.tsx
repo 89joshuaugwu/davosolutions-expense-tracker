@@ -4,7 +4,6 @@ import { useEffect, useState, useCallback } from "react";
 import Link from "next/link";
 import type { TransportListItem } from "@/lib/server/repositories/transport";
 import { formatMoney } from "@/domain/money";
-import { format, subMonths, addMonths } from "date-fns";
 import { AlertCircle, ChevronLeft, ChevronRight, Plus } from "lucide-react";
 
 export function TransportList() {
@@ -12,8 +11,11 @@ export function TransportList() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  // Default to current month
-  const [currentMonth, setCurrentMonth] = useState(() => format(new Date(), "yyyy-MM"));
+  // Default to current month YYYY-MM
+  const [currentMonth, setCurrentMonth] = useState(() => {
+    const d = new Date();
+    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
+  });
 
   const fetchLogs = useCallback(async (month: string) => {
     setLoading(true);
@@ -35,10 +37,32 @@ export function TransportList() {
   }, [currentMonth, fetchLogs]);
 
   const handlePrevMonth = () => {
-    setCurrentMonth((prev) => format(subMonths(new Date(`${prev}-01`), 1), "yyyy-MM"));
+    setCurrentMonth((prev) => {
+      let [year, month] = prev.split("-").map(Number);
+      month -= 1;
+      if (month < 1) {
+        month = 12;
+        year -= 1;
+      }
+      return `${year}-${String(month).padStart(2, "0")}`;
+    });
   };
   const handleNextMonth = () => {
-    setCurrentMonth((prev) => format(addMonths(new Date(`${prev}-01`), 1), "yyyy-MM"));
+    setCurrentMonth((prev) => {
+      let [year, month] = prev.split("-").map(Number);
+      month += 1;
+      if (month > 12) {
+        month = 1;
+        year += 1;
+      }
+      return `${year}-${String(month).padStart(2, "0")}`;
+    });
+  };
+
+  const getMonthName = (yyyy_mm: string) => {
+    const [year, month] = yyyy_mm.split("-").map(Number);
+    const date = new Date(year, month - 1);
+    return new Intl.DateTimeFormat("en-US", { month: "short", year: "numeric" }).format(date);
   };
 
   return (
@@ -54,7 +78,7 @@ export function TransportList() {
               <ChevronLeft className="w-5 h-5" />
             </button>
             <span className="text-sm font-semibold w-28 text-center text-gray-700">
-              {format(new Date(`${currentMonth}-01`), "MMMM yyyy")}
+              {getMonthName(currentMonth)}
             </span>
             <button
               onClick={handleNextMonth}

@@ -1,6 +1,15 @@
 import { z } from "zod";
-import { isValidIsoDate } from "@/domain/dates";
+import { assertDateOnly } from "@/domain/dates";
 import { CURRENCIES, type CurrencyCode, parseAmountToMinor } from "@/domain/money";
+
+function isValidIsoDate(val: string): boolean {
+  try {
+    assertDateOnly(val);
+    return true;
+  } catch {
+    return false;
+  }
+}
 
 const amountString = z.string().regex(/^\d+(\.\d{1,2})?$/, {
   message: "Amount must be a positive number with up to 2 decimal places",

@@ -44,69 +44,66 @@ export function MonthlyFundsList() {
   }, [fetchFunds]);
 
   return (
-    <div className="space-y-6">
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+    <>
+      <div className="page-heading">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Monthly Funds</h1>
-          <p className="text-sm text-gray-500 mt-1">Manage opening cash allocations for reporting months.</p>
+          <p className="eyebrow">WORKSPACE</p>
+          <h1>Monthly Funds</h1>
+          <p>Manage opening cash allocations for reporting months.</p>
         </div>
-        <div className="flex items-center gap-3">
-          <Link
-            href="/monthly-funds/new"
-            className="inline-flex items-center justify-center px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 transition-colors shadow-sm"
-          >
-            <Plus className="w-4 h-4 mr-1.5" />
-            New Allocation
+        <div className="heading-actions">
+          <Link className="button primary" href="/monthly-funds/new">
+            <Plus size={16} /> New Allocation
           </Link>
         </div>
       </div>
 
       {error && (
-        <div className="p-4 bg-red-50 border-l-4 border-red-500 rounded-r-md flex items-start">
-          <AlertCircle className="w-5 h-5 text-red-500 mt-0.5 mr-3 flex-shrink-0" />
-          <p className="text-red-800 text-sm">{error}</p>
+        <div className="form-error">
+          <AlertCircle size={16} />
+          <p>{error}</p>
         </div>
       )}
 
       {loading ? (
-        <div className="text-center py-12 text-gray-500">Loading funds...</div>
+        <div className="loading-state">Loading funds...</div>
       ) : funds.length === 0 && !error ? (
-        <div className="text-center py-12 bg-white border border-gray-200 rounded-xl">
-          <p className="text-gray-500">No monthly funds have been allocated yet.</p>
+        <div className="panel empty-state">
+          <h3>No monthly funds have been allocated yet.</h3>
         </div>
       ) : funds.length > 0 ? (
-        <div className="bg-white border border-gray-200 rounded-xl shadow-sm overflow-hidden">
-          <table className="w-full text-sm text-left">
-            <thead className="bg-gray-50 text-gray-600 border-b border-gray-200">
+        <div className="panel table-container">
+          <table className="data-table">
+            <thead>
               <tr>
-                <th className="px-6 py-4 font-semibold">Month</th>
-                <th className="px-6 py-4 font-semibold">Source / Ref</th>
-                <th className="px-6 py-4 font-semibold text-right">Original Amount</th>
-                <th className="px-6 py-4 font-semibold text-right">Base Amount</th>
-                <th className="px-6 py-4 font-semibold text-right">Actions</th>
+                <th>Month</th>
+                <th>Source / Ref</th>
+                <th className="text-right">Original Amount</th>
+                <th className="text-right">Base Amount</th>
+                <th></th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-gray-200">
+            <tbody>
               {funds.map((fund) => {
                 return (
-                  <tr key={fund.id} className="hover:bg-gray-50/50 transition-colors">
-                    <td className="px-6 py-4">
-                      <div className="flex items-center gap-2 font-medium text-gray-900">
-                        <Calendar className="w-4 h-4 text-gray-400" />
+                  <tr key={fund.id}>
+                    <td>
+                      <div style={{ display: "flex", alignItems: "center", gap: 8, fontWeight: 500 }}>
+                        <Calendar size={14} style={{ color: "var(--muted)" }} />
                         {fund.month}
                       </div>
                     </td>
-                    <td className="px-6 py-4 text-gray-500">{fund.source || "—"}</td>
-                    <td className="px-6 py-4 text-right font-medium text-gray-900">
-                      {formatMoney(fund.originalAmountMinor, fund.currency as any)}
+                    <td style={{ color: "var(--muted)" }}>{fund.source || "—"}</td>
+                    <td className="text-right amount-cell">
+                      <strong>{formatMoney(fund.originalAmountMinor, fund.currency as any)}</strong>
                     </td>
-                    <td className="px-6 py-4 text-right text-gray-600">
+                    <td className="text-right amount-cell">
                       {fund.currency !== fund.baseCurrency 
                         ? formatMoney(fund.baseAmountMinor, fund.baseCurrency as any)
                         : "—"}
                     </td>
-                    <td className="px-6 py-4 text-right">
-                      <Link href={`/monthly-funds/${fund.id}`} className="text-blue-600 hover:text-blue-800 font-medium hover:underline">
+                    <td>
+                      <Link href={`/monthly-funds/${fund.id}`} className="text-link">
                         Reconciliation
                       </Link>
                     </td>
@@ -117,6 +114,6 @@ export function MonthlyFundsList() {
           </table>
         </div>
       ) : null}
-    </div>
+    </>
   );
 }

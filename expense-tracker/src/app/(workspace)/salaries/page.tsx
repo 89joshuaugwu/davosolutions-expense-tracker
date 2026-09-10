@@ -24,24 +24,23 @@ export default async function SalariesPage() {
   const canCreate = canCreateOperationalRecord(user);
 
   return (
-    <div className="max-w-4xl mx-auto space-y-6">
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+    <>
+      <div className="page-heading">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900 tracking-tight">Salary Register</h1>
-          <p className="text-sm text-gray-500 mt-1">Manage staff salaries and wages.</p>
+          <p className="eyebrow">WORKSPACE</p>
+          <h1>Salary Register</h1>
+          <p>Manage staff salaries and wages.</p>
         </div>
         {canCreate && (
-          <Link
-            href="/salaries/new"
-            className="inline-flex items-center justify-center gap-2 px-4 py-2 bg-indigo-600 text-white text-sm font-medium rounded-lg hover:bg-indigo-700 transition-colors shadow-sm shrink-0"
-          >
-            <Plus className="w-4 h-4" />
-            Log Salary
-          </Link>
+          <div className="heading-actions">
+            <Link className="button primary" href="/salaries/new">
+              <Plus size={16} /> Log Salary
+            </Link>
+          </div>
         )}
       </div>
 
       <SalaryList />
-    </div>
+    </>
   );
 }

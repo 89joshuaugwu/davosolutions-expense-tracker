@@ -34,20 +34,11 @@ export default async function NewTransportPage() {
   }
 
   return (
-    <div className="space-y-6">
-      <div>
-        <h2 className="text-2xl font-bold tracking-tight">Log Transport</h2>
-        <p className="text-muted-foreground">
-          Record daily commutes and extra travel expenses.
-        </p>
-      </div>
-
-      <div className="bg-card text-card-foreground border rounded-lg p-6 shadow-sm">
-        <NewTransportForm 
-          categories={categories} 
-          baseCurrency={settings.baseCurrency} 
-        />
-      </div>
-    </div>
+    <>
+      <NewTransportForm 
+        categories={categories} 
+        baseCurrency={settings.baseCurrency} 
+      />
+    </>
   );
 }

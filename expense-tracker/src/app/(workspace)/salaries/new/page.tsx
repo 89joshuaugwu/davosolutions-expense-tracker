@@ -35,13 +35,13 @@ export default async function NewSalaryPage() {
     .sort((a, b) => a.name.localeCompare(b.name));
 
   return (
-    <div className="py-6">
+    <>
       <NewSalaryForm
         categories={categories}
         baseCurrency={settings.baseCurrency}
         enabledCurrencies={settings.enabledCurrencies || [settings.baseCurrency]}
         userRole={user.role as "super_admin" | "secretary"}
       />
-    </div>
+    </>
   );
 }

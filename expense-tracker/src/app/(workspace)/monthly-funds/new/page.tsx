@@ -6,8 +6,8 @@ export const metadata = {
 
 export default function NewMonthlyFundPage() {
   return (
-    <div className="max-w-6xl mx-auto py-8">
+    <>
       <NewFundForm />
-    </div>
+    </>
   );
 }

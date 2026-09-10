@@ -52,114 +52,106 @@ export function NewFundForm() {
   };
 
   return (
-    <div className="max-w-2xl mx-auto space-y-6">
-      <div className="flex items-center gap-4">
-        <Link
-          href="/monthly-funds"
-          className="p-2 text-gray-500 hover:text-gray-900 hover:bg-gray-100 rounded-full transition-colors"
-        >
-          <ArrowLeft className="w-5 h-5" />
+    <div className="panel form-panel" style={{ maxWidth: 650, margin: "0 auto" }}>
+      <div style={{ display: "flex", alignItems: "center", gap: 16, marginBottom: 24 }}>
+        <Link href="/monthly-funds" className="icon-button">
+          <ArrowLeft size={20} />
         </Link>
-        <h1 className="text-2xl font-bold text-gray-900">Allocate Monthly Fund</h1>
+        <h2 style={{ margin: 0 }}>Allocate Monthly Fund</h2>
       </div>
 
-      <div className="bg-white border border-gray-200 rounded-xl shadow-sm overflow-hidden">
-        <div className="px-6 py-4 border-b border-gray-100 bg-gray-50/50">
-          <p className="text-sm text-gray-600">
-            Define the starting fund pool for a reporting month. This does <span className="font-semibold text-gray-900">not</span> post a ledger entry.
-          </p>
-        </div>
+      <div style={{ padding: 16, background: "var(--background)", borderBottom: "1px solid var(--line)", borderRadius: "8px 8px 0 0" }}>
+        <p style={{ margin: 0, fontSize: 13, color: "var(--muted)" }}>
+          Define the starting fund pool for a reporting month. This does <strong>not</strong> post a ledger entry.
+        </p>
+      </div>
 
-        <form onSubmit={handleSubmit} className="p-6 space-y-6">
-          {error && (
-            <div className="p-4 bg-red-50 border-l-4 border-red-500 rounded-r-md flex items-start">
-              <AlertCircle className="w-5 h-5 text-red-500 mt-0.5 mr-3 flex-shrink-0" />
-              <p className="text-red-800 text-sm">{error}</p>
-            </div>
-          )}
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-            <div className="space-y-2">
-              <label htmlFor="month" className="block text-sm font-medium text-gray-700">Reporting Month</label>
-              <input
-                id="month"
-                type="month"
-                required
-                value={formData.month}
-                onChange={e => setFormData(prev => ({ ...prev, month: e.target.value }))}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-              />
-            </div>
-
-            <div className="space-y-2">
-              <label htmlFor="source" className="block text-sm font-medium text-gray-700">Source / Reference (Optional)</label>
-              <input
-                id="source"
-                value={formData.source}
-                onChange={e => setFormData(prev => ({ ...prev, source: e.target.value }))}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                placeholder="e.g. Bank Transfer Ref"
-              />
-            </div>
-
-            <div className="space-y-2 sm:col-span-2">
-              <label htmlFor="amount" className="block text-sm font-medium text-gray-700">Opening Amount</label>
-              <div className="flex gap-2">
-                <input
-                  id="amount"
-                  type="number"
-                  step="0.01"
-                  min="0"
-                  required
-                  value={formData.originalAmount}
-                  onChange={e => setFormData(prev => ({ ...prev, originalAmount: e.target.value }))}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                  placeholder="0.00"
-                />
-                <select
-                  value={formData.currency}
-                  onChange={e => setFormData(prev => ({ ...prev, currency: e.target.value }))}
-                  className="w-24 px-2 py-2 border border-gray-300 rounded-lg bg-gray-50 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                >
-                  <option value="NGN">NGN</option>
-                  <option value="USD">USD</option>
-                  <option value="EUR">EUR</option>
-                  <option value="GBP">GBP</option>
-                </select>
-              </div>
-            </div>
+      <form onSubmit={handleSubmit} className="expense-form">
+        {error && (
+          <div className="form-error">
+            <AlertCircle size={16} />
+            <p>{error}</p>
           </div>
+        )}
 
-          <div className="space-y-2">
-            <label htmlFor="notes" className="block text-sm font-medium text-gray-700">Notes (Optional)</label>
-            <textarea
-              id="notes"
-              rows={3}
-              value={formData.notes}
-              onChange={e => setFormData(prev => ({ ...prev, notes: e.target.value }))}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 resize-none"
-              placeholder="Any additional context..."
+        <div className="form-row">
+          <div className="form-group">
+            <label htmlFor="month">Reporting Month *</label>
+            <input
+              id="month"
+              type="month"
+              required
+              value={formData.month}
+              onChange={e => setFormData(prev => ({ ...prev, month: e.target.value }))}
             />
           </div>
 
-          <div className="pt-4 border-t border-gray-100 flex justify-end">
-            <button
-              type="submit"
-              disabled={submitting}
-              className="inline-flex items-center px-6 py-2.5 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors shadow-sm"
-            >
-              {submitting ? (
-                <>Saving...</>
-              ) : (
-                <>
-                  <Save className="w-5 h-5 mr-2" />
-                  Allocate Fund
-                </>
-              )}
-            </button>
+          <div className="form-group">
+            <label htmlFor="source">Source / Reference (Optional)</label>
+            <input
+              id="source"
+              value={formData.source}
+              onChange={e => setFormData(prev => ({ ...prev, source: e.target.value }))}
+              placeholder="e.g. Bank Transfer Ref"
+            />
           </div>
-        </form>
-      </div>
+        </div>
+
+        <div className="form-group">
+          <label htmlFor="amount">Opening Amount *</label>
+          <div style={{ display: "flex", gap: 8 }}>
+            <input
+              id="amount"
+              type="number"
+              step="0.01"
+              min="0"
+              required
+              value={formData.originalAmount}
+              onChange={e => setFormData(prev => ({ ...prev, originalAmount: e.target.value }))}
+              placeholder="0.00"
+              style={{ flex: 1 }}
+            />
+            <select
+              value={formData.currency}
+              onChange={e => setFormData(prev => ({ ...prev, currency: e.target.value }))}
+              style={{ width: 100 }}
+            >
+              <option value="NGN">NGN</option>
+              <option value="USD">USD</option>
+              <option value="EUR">EUR</option>
+              <option value="GBP">GBP</option>
+            </select>
+          </div>
+        </div>
+
+        <div className="form-group">
+          <label htmlFor="notes">Notes (Optional)</label>
+          <textarea
+            id="notes"
+            rows={3}
+            value={formData.notes}
+            onChange={e => setFormData(prev => ({ ...prev, notes: e.target.value }))}
+            placeholder="Any additional context..."
+          />
+        </div>
+
+        <div className="form-actions">
+          <Link href="/monthly-funds" className="button secondary">
+            Cancel
+          </Link>
+          <button
+            type="submit"
+            disabled={submitting}
+            className="button primary"
+          >
+            {submitting ? (
+              "Saving..."
+            ) : (
+              <>Allocate Fund <Save size={16} /></>
+            )}
+          </button>
+        </div>
+      </form>
     </div>
   );
 }

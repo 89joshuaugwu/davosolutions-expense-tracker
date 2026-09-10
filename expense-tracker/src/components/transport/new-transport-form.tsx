@@ -104,17 +104,14 @@ export function NewTransportForm({ categories, baseCurrency }: Props) {
 
   if (formState === "success" && createdId) {
     return (
-      <div className="max-w-2xl mx-auto p-6 bg-white border border-green-100 rounded-xl shadow-sm text-center space-y-6">
-        <div className="mx-auto w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mb-4">
-          <Check className="w-8 h-8 text-green-600" />
+      <div className="state-panel panel" style={{ margin: "0 auto" }}>
+        <div className="empty-icon" style={{ margin: "0 auto 16px" }}>
+          <Check size={28} />
         </div>
-        <h2 className="text-2xl font-bold text-gray-900">Transport Logged</h2>
-        <p className="text-gray-600">The transport record has been created successfully.</p>
-        <div className="flex flex-col sm:flex-row gap-4 justify-center pt-4">
-          <Link
-            href={`/transport/${createdId}`}
-            className="px-6 py-2.5 bg-white border border-gray-300 text-gray-700 font-medium rounded-lg hover:bg-gray-50 transition-colors"
-          >
+        <h1>Transport Logged</h1>
+        <p>The transport record has been created successfully.</p>
+        <div className="form-actions" style={{ justifyContent: "center" }}>
+          <Link href={`/transport/${createdId}`} className="button secondary">
             View Record
           </Link>
           <button
@@ -127,7 +124,7 @@ export function NewTransportForm({ categories, baseCurrency }: Props) {
               setFormState("idle");
               setCreatedId(null);
             }}
-            className="px-6 py-2.5 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 transition-colors"
+            className="button primary"
           >
             Log Another
           </button>
@@ -137,175 +134,149 @@ export function NewTransportForm({ categories, baseCurrency }: Props) {
   }
 
   return (
-    <div className="max-w-3xl mx-auto">
-      <form onSubmit={handleSubmit} className="space-y-8 bg-white p-6 md:p-8 rounded-xl shadow-sm border border-gray-100">
+    <div className="panel form-panel" style={{ maxWidth: 650, margin: "0 auto" }}>
+      <h2>Log Transport</h2>
+
+      <form onSubmit={handleSubmit} className="expense-form">
         {globalError && (
-          <div className="p-4 bg-red-50 border-l-4 border-red-500 rounded-r-md flex items-start">
-            <AlertCircle className="w-5 h-5 text-red-500 mt-0.5 mr-3 flex-shrink-0" />
-            <p className="text-red-800 text-sm">{globalError}</p>
+          <div className="form-error">
+            <AlertCircle size={16} />
+            <p>{globalError}</p>
           </div>
         )}
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div className="space-y-2">
-            <label htmlFor={`${formId}-date`} className="block text-sm font-medium text-gray-700">
-              Date <span className="text-red-500">*</span>
-            </label>
+        <div className="form-row">
+          <div className="form-group">
+            <label htmlFor={`${formId}-date`}>Date *</label>
             <input
               id={`${formId}-date`}
               type="date"
               required
               value={date}
               onChange={(e) => setDate(e.target.value)}
-              className="w-full px-4 py-2.5 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
             />
-            {fieldErrors.date && <p className="text-sm text-red-600">{fieldErrors.date}</p>}
+            {fieldErrors.date && <p className="field-error">{fieldErrors.date}</p>}
           </div>
 
-          <div className="space-y-2">
-            <label htmlFor={`${formId}-category`} className="block text-sm font-medium text-gray-700">
-              Category <span className="text-red-500">*</span>
-            </label>
+          <div className="form-group">
+            <label htmlFor={`${formId}-category`}>Category *</label>
             <select
               id={`${formId}-category`}
               required
               value={categoryId}
               onChange={(e) => setCategoryId(e.target.value)}
-              className="w-full px-4 py-2.5 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white"
             >
               {categories.map((c) => (
                 <option key={c.id} value={c.id}>{c.name}</option>
               ))}
             </select>
-            {fieldErrors.categoryId && <p className="text-sm text-red-600">{fieldErrors.categoryId}</p>}
+            {fieldErrors.categoryId && <p className="field-error">{fieldErrors.categoryId}</p>}
           </div>
         </div>
 
-        <div className="border-t border-gray-100 pt-6 space-y-6">
-          <h3 className="text-lg font-semibold text-gray-900">Amounts</h3>
+        <div className="form-group" style={{ maxWidth: 200 }}>
+          <label htmlFor={`${formId}-currency`}>Currency</label>
+          <select
+            id={`${formId}-currency`}
+            value={currency}
+            onChange={(e) => setCurrency(e.target.value as CurrencyCode)}
+          >
+            {Object.entries(CURRENCIES).map(([code, def]) => (
+              <option key={code} value={code}>
+                {code} - {def.name}
+              </option>
+            ))}
+          </select>
+          {fieldErrors.currency && <p className="field-error">{fieldErrors.currency}</p>}
+        </div>
 
-          <div className="space-y-2 max-w-[250px]">
-            <label htmlFor={`${formId}-currency`} className="block text-sm font-medium text-gray-700">
-              Currency
-            </label>
-            <select
-              id={`${formId}-currency`}
-              value={currency}
-              onChange={(e) => setCurrency(e.target.value as CurrencyCode)}
-              className="w-full px-4 py-2.5 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white"
-            >
-              {Object.entries(CURRENCIES).map(([code, def]) => (
-                <option key={code} value={code}>
-                  {code} - {def.name}
-                </option>
-              ))}
-            </select>
-            {fieldErrors.currency && <p className="text-sm text-red-600">{fieldErrors.currency}</p>}
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <div className="space-y-2">
-              <label htmlFor={`${formId}-morning`} className="block text-sm font-medium text-gray-700">
-                Morning
-              </label>
+        <div className="form-row">
+          <div className="form-group">
+            <label htmlFor={`${formId}-morning`}>Morning</label>
+            <div className="input-with-prefix">
+              <span className="input-prefix">{CURRENCIES[currency]?.symbol}</span>
               <input
                 id={`${formId}-morning`}
                 type="text"
                 placeholder="0.00"
                 value={morningAmount}
                 onChange={(e) => setMorningAmount(e.target.value)}
-                className="w-full px-4 py-2.5 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
               />
-              {fieldErrors.morningAmount && <p className="text-sm text-red-600">{fieldErrors.morningAmount}</p>}
             </div>
+            {fieldErrors.morningAmount && <p className="field-error">{fieldErrors.morningAmount}</p>}
+          </div>
 
-            <div className="space-y-2">
-              <label htmlFor={`${formId}-evening`} className="block text-sm font-medium text-gray-700">
-                Evening
-              </label>
+          <div className="form-group">
+            <label htmlFor={`${formId}-evening`}>Evening</label>
+            <div className="input-with-prefix">
+              <span className="input-prefix">{CURRENCIES[currency]?.symbol}</span>
               <input
                 id={`${formId}-evening`}
                 type="text"
                 placeholder="0.00"
                 value={eveningAmount}
                 onChange={(e) => setEveningAmount(e.target.value)}
-                className="w-full px-4 py-2.5 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
               />
-              {fieldErrors.eveningAmount && <p className="text-sm text-red-600">{fieldErrors.eveningAmount}</p>}
             </div>
+            {fieldErrors.eveningAmount && <p className="field-error">{fieldErrors.eveningAmount}</p>}
+          </div>
 
-            <div className="space-y-2">
-              <label htmlFor={`${formId}-extra`} className="block text-sm font-medium text-gray-700">
-                Extra
-              </label>
+          <div className="form-group">
+            <label htmlFor={`${formId}-extra`}>Extra</label>
+            <div className="input-with-prefix">
+              <span className="input-prefix">{CURRENCIES[currency]?.symbol}</span>
               <input
                 id={`${formId}-extra`}
                 type="text"
                 placeholder="0.00"
                 value={extraAmount}
                 onChange={(e) => setExtraAmount(e.target.value)}
-                className="w-full px-4 py-2.5 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
               />
-              {fieldErrors.extraAmount && <p className="text-sm text-red-600">{fieldErrors.extraAmount}</p>}
             </div>
+            {fieldErrors.extraAmount && <p className="field-error">{fieldErrors.extraAmount}</p>}
           </div>
-
-          {extraAmount && extraAmount !== "0" && extraAmount.trim() !== "" && (
-            <div className="space-y-2 border-l-4 border-blue-500 pl-4 bg-blue-50/50 p-4 rounded-r-lg">
-              <label htmlFor={`${formId}-extra-reason`} className="block text-sm font-medium text-gray-700">
-                Reason for Extra Amount <span className="text-red-500">*</span>
-              </label>
-              <input
-                id={`${formId}-extra-reason`}
-                type="text"
-                required
-                value={extraReason}
-                onChange={(e) => setExtraReason(e.target.value)}
-                className="w-full px-4 py-2.5 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors bg-white"
-                placeholder="e.g. Client meeting in city center"
-              />
-              {fieldErrors.extraReason && <p className="text-sm text-red-600">{fieldErrors.extraReason}</p>}
-            </div>
-          )}
         </div>
 
-        <div className="border-t border-gray-100 pt-6 space-y-2">
-          <label htmlFor={`${formId}-notes`} className="block text-sm font-medium text-gray-700">
-            Notes (Optional)
-          </label>
+        {extraAmount && extraAmount !== "0" && extraAmount.trim() !== "" && (
+          <div className="form-group" style={{ padding: 15, background: "#fafbfd", borderRadius: 8, border: "1px solid var(--line)" }}>
+            <label htmlFor={`${formId}-extra-reason`}>Reason for Extra Amount *</label>
+            <input
+              id={`${formId}-extra-reason`}
+              type="text"
+              required
+              value={extraReason}
+              onChange={(e) => setExtraReason(e.target.value)}
+              placeholder="e.g. Client meeting in city center"
+            />
+            {fieldErrors.extraReason && <p className="field-error">{fieldErrors.extraReason}</p>}
+          </div>
+        )}
+
+        <div className="form-group">
+          <label htmlFor={`${formId}-notes`}>Notes (Optional)</label>
           <textarea
             id={`${formId}-notes`}
             rows={3}
             value={notes}
             onChange={(e) => setNotes(e.target.value)}
-            className="w-full px-4 py-2.5 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors resize-y"
             placeholder="Any additional context..."
           />
-          {fieldErrors.notes && <p className="text-sm text-red-600">{fieldErrors.notes}</p>}
+          {fieldErrors.notes && <p className="field-error">{fieldErrors.notes}</p>}
         </div>
 
-        <div className="pt-6 border-t border-gray-100 flex justify-end gap-4">
-          <Link
-            href="/transport"
-            className="px-6 py-2.5 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
-          >
+        <div className="form-actions">
+          <Link href="/transport" className="button secondary">
             Cancel
           </Link>
           <button
             type="submit"
             disabled={formState === "submitting"}
-            className="inline-flex items-center px-6 py-2.5 text-sm font-medium text-white bg-blue-600 border border-transparent rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
+            className="button primary"
           >
             {formState === "submitting" ? (
-              <>
-                <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                Saving...
-              </>
+              <Loader2 size={16} className="spin" />
             ) : (
-              <>
-                <Send className="w-4 h-4 mr-2" />
-                Log Transport
-              </>
+              <>Submit <Send size={16} /></>
             )}
           </button>
         </div>

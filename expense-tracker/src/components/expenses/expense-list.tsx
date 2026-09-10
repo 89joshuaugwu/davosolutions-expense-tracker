@@ -121,10 +121,11 @@ export function ExpenseList({ initialMonth }: Props) {
           />
         </div>
         <button
-          className="button secondary icon-button"
+          className="icon-button"
           onClick={() => fetchExpenses()}
           disabled={loading}
           aria-label="Refresh expenses"
+          style={{ border: "1px solid var(--line)" }}
         >
           <RefreshCw size={16} className={loading ? "spin" : ""} />
         </button>

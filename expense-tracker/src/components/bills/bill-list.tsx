@@ -49,9 +49,9 @@ export function BillList() {
 
   const getStatusDisplay = (status: string) => {
     switch(status) {
-      case "active": return <span className="bg-green-100 text-green-800 px-2 py-1 rounded text-xs font-medium">Active</span>;
-      case "paused": return <span className="bg-yellow-100 text-yellow-800 px-2 py-1 rounded text-xs font-medium">Paused</span>;
-      case "completed": return <span className="bg-gray-100 text-gray-800 px-2 py-1 rounded text-xs font-medium">Completed</span>;
+      case "active": return <span className="badge success">Active</span>;
+      case "paused": return <span className="badge warning">Paused</span>;
+      case "completed": return <span className="badge neutral">Completed</span>;
       default: return null;
     }
   };
@@ -60,83 +60,90 @@ export function BillList() {
   const today = new Date().toISOString().slice(0, 10);
 
   return (
-    <div className="space-y-6">
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <h1 className="text-2xl font-bold text-gray-900">Bills & Occurrences</h1>
-        <div className="flex items-center gap-3">
-          <select 
-            value={statusFilter} 
-            onChange={(e) => setStatusFilter(e.target.value as any)}
-            className="border-gray-300 rounded-lg text-sm"
-          >
-            <option value="active">Active Bills</option>
-            <option value="paused">Paused Bills</option>
-            <option value="completed">Completed Bills</option>
-          </select>
-          <Link
-            href="/bills/new"
-            className="inline-flex items-center justify-center px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 transition-colors shadow-sm"
-          >
-            <Plus className="w-4 h-4 mr-1.5" />
-            New Bill
+    <div className="bill-list-page">
+      <div className="page-heading">
+        <div>
+          <h1>Bills & Occurrences</h1>
+          <p>Track subscriptions and upcoming payments.</p>
+        </div>
+        <div className="heading-actions">
+          <div className="form-group" style={{ marginBottom: 0 }}>
+            <select 
+              value={statusFilter} 
+              onChange={(e) => setStatusFilter(e.target.value as any)}
+            >
+              <option value="active">Active Bills</option>
+              <option value="paused">Paused Bills</option>
+              <option value="completed">Completed Bills</option>
+            </select>
+          </div>
+          <Link href="/bills/new" className="button primary">
+            <Plus size={16} /> New Bill
           </Link>
         </div>
       </div>
 
       {error && (
-        <div className="p-4 bg-red-50 border-l-4 border-red-500 rounded-r-md flex items-start">
-          <AlertCircle className="w-5 h-5 text-red-500 mt-0.5 mr-3 flex-shrink-0" />
-          <p className="text-red-800 text-sm">{error}</p>
-        </div>
+        <p className="form-error" role="alert">
+          <AlertCircle size={16} /> {error}
+        </p>
       )}
 
       {loading ? (
-        <div className="text-center py-12 text-gray-500">Loading bills...</div>
+        <div className="loading-state">
+          <p>Loading bills...</p>
+        </div>
       ) : bills.length === 0 ? (
-        <div className="text-center py-12 bg-white border border-gray-200 rounded-xl">
-          <p className="text-gray-500">No {statusFilter} bills found.</p>
+        <div className="panel empty-state">
+          <span className="empty-icon">
+            <Calendar size={28} />
+          </span>
+          <h3>No {statusFilter} bills found</h3>
+          <p>You have no bills matching this status.</p>
+          <Link href="/bills/new" className="button primary">
+            Add a new bill
+          </Link>
         </div>
       ) : (
-        <div className="bg-white border border-gray-200 rounded-xl shadow-sm overflow-hidden">
-          <table className="w-full text-sm text-left">
-            <thead className="bg-gray-50 text-gray-600 border-b border-gray-200">
+        <div className="table-container">
+          <table className="data-table">
+            <thead>
               <tr>
-                <th className="px-6 py-4 font-semibold">Bill Name</th>
-                <th className="px-6 py-4 font-semibold">Provider</th>
-                <th className="px-6 py-4 font-semibold text-right">Amount</th>
-                <th className="px-6 py-4 font-semibold">Frequency</th>
-                <th className="px-6 py-4 font-semibold">Next Due Date</th>
-                <th className="px-6 py-4 font-semibold text-center">Status</th>
-                <th className="px-6 py-4 font-semibold text-right">Actions</th>
+                <th>Bill Name</th>
+                <th>Provider</th>
+                <th className="text-right">Amount</th>
+                <th>Frequency</th>
+                <th>Next Due Date</th>
+                <th className="center">Status</th>
+                <th></th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-gray-200">
+            <tbody>
               {bills.map((bill) => {
                 const isOverdue = bill.status === "active" && bill.nextDueDate < today;
                 const isDueToday = bill.status === "active" && bill.nextDueDate === today;
                 return (
-                  <tr key={bill.id} className="hover:bg-gray-50/50 transition-colors">
-                    <td className="px-6 py-4 font-medium text-gray-900">{bill.name}</td>
-                    <td className="px-6 py-4 text-gray-500">{bill.provider}</td>
-                    <td className="px-6 py-4 text-right font-medium text-gray-900">
-                      {formatMoney(bill.amountMinor, bill.currency as any)}
+                  <tr key={bill.id}>
+                    <td><strong>{bill.name}</strong></td>
+                    <td>{bill.provider}</td>
+                    <td className="text-right amount-cell">
+                      <strong>{formatMoney(bill.amountMinor, bill.currency as any)}</strong>
                     </td>
-                    <td className="px-6 py-4 text-gray-500 capitalize">{bill.frequency.replace("_", "-")}</td>
-                    <td className="px-6 py-4">
-                      <div className="flex items-center gap-2">
-                        <Calendar className="w-4 h-4 text-gray-400" />
-                        <span className={`font-medium ${isOverdue ? 'text-red-600' : isDueToday ? 'text-orange-600' : 'text-gray-700'}`}>
+                    <td><span className="badge neutral" style={{ textTransform: 'capitalize' }}>{bill.frequency.replace("_", "-")}</span></td>
+                    <td>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                        <span className={isOverdue ? "muted" : isDueToday ? "muted" : ""}>
                           {formatDate(bill.nextDueDate)}
                         </span>
-                        {isOverdue && <span className="text-xs bg-red-100 text-red-700 px-1.5 py-0.5 rounded">Overdue</span>}
-                        {isDueToday && <span className="text-xs bg-orange-100 text-orange-700 px-1.5 py-0.5 rounded">Due Today</span>}
+                        {isOverdue && <span className="badge" style={{ color: '#c4403b', background: '#fff2f1' }}>Overdue</span>}
+                        {isDueToday && <span className="badge" style={{ color: '#bc8a36', background: '#fff8ee' }}>Due Today</span>}
                       </div>
                     </td>
-                    <td className="px-6 py-4 text-center">
+                    <td className="center">
                       {getStatusDisplay(bill.status)}
                     </td>
-                    <td className="px-6 py-4 text-right">
-                      <Link href={`/bills/${bill.id}`} className="text-blue-600 hover:text-blue-800 font-medium hover:underline">
+                    <td className="text-right">
+                      <Link href={`/bills/${bill.id}`} className="text-link">
                         View
                       </Link>
                     </td>

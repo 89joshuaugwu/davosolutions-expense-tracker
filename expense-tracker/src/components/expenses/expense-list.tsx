@@ -44,6 +44,27 @@ export function ExpenseList({ initialMonth }: Props) {
   const [loadingMore, setLoadingMore] = useState(false);
   const [error, setError] = useState("");
 
+  const searchParams = new URLSearchParams(typeof window !== "undefined" ? window.location.search : "");
+  
+  // Filters state
+  const [startDate, setStartDate] = useState(searchParams.get("startDate") || "");
+  const [endDate, setEndDate] = useState(searchParams.get("endDate") || "");
+  const [categoryId, setCategoryId] = useState(searchParams.get("category") || "");
+  const [currency, setCurrency] = useState(searchParams.get("currency") || "");
+  const [frequency, setFrequency] = useState(searchParams.get("frequency") || "");
+  
+  const buildQueryString = useCallback((cursor?: string) => {
+    const params = new URLSearchParams();
+    if (month) params.set("month", month);
+    if (startDate) params.set("startDate", startDate);
+    if (endDate) params.set("endDate", endDate);
+    if (categoryId) params.set("category", categoryId);
+    if (currency) params.set("currency", currency);
+    if (frequency) params.set("frequency", frequency);
+    if (cursor) params.set("cursor", cursor);
+    return params.toString();
+  }, [month, startDate, endDate, categoryId, currency, frequency]);
+
   const fetchExpenses = useCallback(
     async (cursor?: string) => {
       const isLoadingMore = !!cursor;
@@ -52,11 +73,8 @@ export function ExpenseList({ initialMonth }: Props) {
       setError("");
 
       try {
-        const params = new URLSearchParams();
-        if (month) params.set("month", month);
-        if (cursor) params.set("cursor", cursor);
-
-        const response = await fetch(`/api/expenses?${params.toString()}`);
+        const qs = buildQueryString(cursor);
+        const response = await fetch(`/api/expenses?${qs}`);
         const data = await response.json();
 
         if (!response.ok) {
@@ -88,9 +106,8 @@ export function ExpenseList({ initialMonth }: Props) {
       setLoading(true);
       setError("");
       try {
-        const params = new URLSearchParams();
-        if (month) params.set("month", month);
-        const response = await fetch(`/api/expenses?${params.toString()}`);
+        const qs = buildQueryString();
+        const response = await fetch(`/api/expenses?${qs}`);
         const data = await response.json();
         if (cancelled) return;
         if (!response.ok) { setError(data.error || "Failed to load expenses."); return; }
@@ -102,33 +119,93 @@ export function ExpenseList({ initialMonth }: Props) {
       finally { if (!cancelled) { setLoading(false); setLoadingMore(false); } }
     })();
     return () => { cancelled = true; };
-  }, [month]);
+  }, [month, startDate, endDate, categoryId, currency, frequency, buildQueryString]);
 
   const categoryName = (id: string) => categories.find((c) => c.id === id)?.name ?? "—";
 
+  const handleResetFilters = () => {
+    setMonth("");
+    setStartDate("");
+    setEndDate("");
+    setCategoryId("");
+    setCurrency("");
+    setFrequency("");
+  };
+
   return (
     <div className="expense-list">
-      <div className="list-controls">
-        <div className="form-group" style={{ maxWidth: 200 }}>
-          <label htmlFor="expense-month" className="sr-only">
-            Month
-          </label>
-          <input
-            id="expense-month"
-            type="month"
-            value={month}
-            onChange={(e) => setMonth(e.target.value)}
+      <div className="bg-white p-4 rounded-xl border border-gray-200 shadow-sm mb-6 flex flex-wrap gap-4 items-end">
+        <div>
+          <label className="block text-xs font-medium text-gray-700 mb-1">Month</label>
+          <input 
+            type="month" 
+            value={month} 
+            onChange={e => { setMonth(e.target.value); setStartDate(""); setEndDate(""); }}
+            className="input-field py-1.5 text-sm"
           />
         </div>
-        <button
-          className="icon-button"
-          onClick={() => fetchExpenses()}
-          disabled={loading}
-          aria-label="Refresh expenses"
-          style={{ border: "1px solid var(--line)" }}
-        >
-          <RefreshCw size={16} className={loading ? "spin" : ""} />
-        </button>
+        <div>
+          <label className="block text-xs font-medium text-gray-700 mb-1">Start Date</label>
+          <input 
+            type="date" 
+            value={startDate} 
+            onChange={e => { setStartDate(e.target.value); setMonth(""); }}
+            className="input-field py-1.5 text-sm"
+          />
+        </div>
+        <div>
+          <label className="block text-xs font-medium text-gray-700 mb-1">End Date</label>
+          <input 
+            type="date" 
+            value={endDate} 
+            onChange={e => { setEndDate(e.target.value); setMonth(""); }}
+            className="input-field py-1.5 text-sm"
+          />
+        </div>
+        <div>
+          <label className="block text-xs font-medium text-gray-700 mb-1">Category</label>
+          <select 
+            value={categoryId} 
+            onChange={e => setCategoryId(e.target.value)}
+            className="input-field py-1.5 text-sm"
+          >
+            <option value="">All Categories</option>
+            {categories.map(c => (
+              <option key={c.id} value={c.id}>{c.name}</option>
+            ))}
+          </select>
+        </div>
+        <div>
+          <label className="block text-xs font-medium text-gray-700 mb-1">Currency</label>
+          <select 
+            value={currency} 
+            onChange={e => setCurrency(e.target.value)}
+            className="input-field py-1.5 text-sm"
+          >
+            <option value="">All</option>
+            {Object.keys(CURRENCIES).map(c => (
+              <option key={c} value={c}>{c}</option>
+            ))}
+          </select>
+        </div>
+        <div>
+          <label className="block text-xs font-medium text-gray-700 mb-1">Frequency</label>
+          <select 
+            value={frequency} 
+            onChange={e => setFrequency(e.target.value)}
+            className="input-field py-1.5 text-sm"
+          >
+            <option value="">All</option>
+            {Object.entries(FREQUENCY_LABELS).map(([val, label]) => (
+              <option key={val} value={val}>{label}</option>
+            ))}
+          </select>
+        </div>
+        {(month || startDate || endDate || categoryId || currency || frequency) && (
+          <button onClick={handleResetFilters} className="btn-secondary py-1.5 text-sm h-[34px]">
+            Reset Filters
+          </button>
+        )}
       </div>
 
       {error && (

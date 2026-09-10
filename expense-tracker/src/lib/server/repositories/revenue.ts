@@ -2,53 +2,44 @@ import "server-only";
 
 import { FieldValue, type Transaction } from "firebase-admin/firestore";
 import { getAdminDb } from "../../firebase/admin";
-import type { ExpenseRecord } from "../../../domain/models";
+import type { RevenueRecord } from "../../../domain/models";
 import { createLedgerPosting } from "../../../domain/ledger";
 import type { AuditEvent } from "../audit-model";
 import { appendAuditInTransaction } from "../audit";
 import { setIdempotencyReceiptInTransaction } from "./idempotency";
 
-/**
- * Projection returned from list/detail queries.
- * Never includes raw Firestore internals or server-only fields.
- */
-export type ExpenseListItem = Pick<
-  ExpenseRecord,
+export type RevenueListItem = Pick<
+  RevenueRecord,
   | "id"
-  | "title"
+  | "description"
   | "originalAmountMinor"
   | "currency"
   | "baseAmountMinor"
   | "baseCurrency"
-  | "categoryId"
+  | "sourceId"
   | "date"
-  | "frequency"
   | "createdBy"
   | "createdAt"
   | "archivedAt"
   | "revision"
 >;
 
-export type ExpenseDetail = ExpenseRecord;
+export type RevenueDetail = RevenueRecord;
 
-function docToExpenseRecord(id: string, data: FirebaseFirestore.DocumentData): ExpenseRecord {
+function docToRevenueRecord(id: string, data: FirebaseFirestore.DocumentData): RevenueRecord {
   return {
     id,
-    kind: "expense",
-    title: String(data["title"] ?? ""),
+    description: String(data["description"] ?? ""),
     originalAmountMinor: Number(data["originalAmountMinor"]),
     currency: data["currency"],
     baseCurrency: data["baseCurrency"],
     exchangeRateSnapshot: String(data["exchangeRateSnapshot"]),
     rateDate: String(data["rateDate"]),
     baseAmountMinor: Number(data["baseAmountMinor"]),
-    categoryId: String(data["categoryId"] ?? ""),
+    sourceId: String(data["sourceId"] ?? ""),
     date: String(data["date"] ?? ""),
-    frequency: data["frequency"] ?? "one_time",
     notes: String(data["notes"] ?? ""),
     attachments: Array.isArray(data["attachments"]) ? data["attachments"] : [],
-    expenseKind: "general",
-    visibleToUserIds: Array.isArray(data["visibleToUserIds"]) ? data["visibleToUserIds"] : [],
     createdBy: String(data["createdBy"] ?? ""),
     createdAt: data["createdAt"]?.toDate?.()?.toISOString() ?? String(data["createdAt"] ?? ""),
     updatedAt: data["updatedAt"]?.toDate?.()?.toISOString() ?? String(data["updatedAt"] ?? ""),
@@ -58,72 +49,62 @@ function docToExpenseRecord(id: string, data: FirebaseFirestore.DocumentData): E
   };
 }
 
-/**
- * Atomically creates one expense, one ledger posting, one audit entry, and one idempotency receipt.
- * All reads must happen BEFORE this function is called (inside the same transaction).
- * This function performs only writes. The expense ID is generated here and returned.
- */
-export function createExpenseInTransaction(
+export function createRevenueInTransaction(
   transaction: Transaction,
-  expense: Omit<ExpenseRecord, "id" | "createdAt" | "updatedAt" | "revision">,
+  revenue: Omit<RevenueRecord, "id" | "createdAt" | "updatedAt" | "revision">,
   postingInput: {
     snapshot: import("../../../domain/money").MoneySnapshot;
     postedOn: import("../../../domain/dates").DateOnly;
-    categoryId: string;
+    sourceId: string;
   },
   auditEvent: AuditEvent,
   idempotencyKey: string,
   idempotencyHash: string,
 ): string {
   const db = getAdminDb();
-  const expenseRef = db.collection("expenses").doc();
-  const expenseId = expenseRef.id;
+  const revenueRef = db.collection("revenue").doc();
+  const revenueId = revenueRef.id;
 
-  // Build posting with the real expense ID
   const posting = createLedgerPosting({
     ...postingInput.snapshot,
-    sourceKind: "expense",
-    sourceId: expenseId,
+    sourceKind: "revenue",
+    sourceId: revenueId,
     postedOn: postingInput.postedOn,
-    categoryId: postingInput.categoryId,
-    revenueSourceId: null,
+    categoryId: null,
+    revenueSourceId: postingInput.sourceId,
   });
 
   const ledgerRef = db.collection("ledgerEntries").doc(posting.id);
 
-  const expenseData = {
-    ...expense,
+  const revenueData = {
+    ...revenue,
     revision: 0,
     createdAt: FieldValue.serverTimestamp(),
     updatedAt: FieldValue.serverTimestamp(),
   };
 
-  transaction.create(expenseRef, expenseData);
+  transaction.create(revenueRef, revenueData);
   transaction.create(ledgerRef, {
     ...posting,
     createdAt: FieldValue.serverTimestamp(),
   });
 
   appendAuditInTransaction(transaction, auditEvent);
-  setIdempotencyReceiptInTransaction(transaction, idempotencyKey, idempotencyHash, expenseRef.id);
+  setIdempotencyReceiptInTransaction(transaction, idempotencyKey, idempotencyHash, revenueRef.id);
 
-  return expenseRef.id;
+  return revenueRef.id;
 }
 
-/**
- * Atomically applies a Super Admin correction to an expense and its ledger posting.
- * Updates source, posting, and appends an immutable audit event.
- */
-export function correctExpenseInTransaction(
+export function correctRevenueInTransaction(
   transaction: Transaction,
-  expenseId: string,
-  patch: Partial<Pick<ExpenseRecord, "title" | "notes" | "categoryId" | "date" | "frequency">>,
+  revenueId: string,
+  patch: Partial<Pick<RevenueRecord, "description" | "notes" | "sourceId" | "date">>,
   expectedRevision: number,
   updatedBy: string,
   auditEvent: AuditEvent,
 ): void {
   const db = getAdminDb();
-  const ref = db.collection("expenses").doc(expenseId);
+  const ref = db.collection("revenue").doc(revenueId);
   transaction.update(ref, {
     ...patch,
     revision: expectedRevision + 1,
@@ -132,23 +113,19 @@ export function correctExpenseInTransaction(
   appendAuditInTransaction(transaction, auditEvent);
 }
 
-/**
- * Atomically soft-archives an expense and its ledger posting.
- * Hard deletion is not supported; archived records are excluded from aggregates.
- */
-export function archiveExpenseInTransaction(
+export function archiveRevenueInTransaction(
   transaction: Transaction,
-  expenseId: string,
+  revenueId: string,
   expectedRevision: number,
   archivedBy: string,
   auditEvent: AuditEvent,
 ): void {
   const db = getAdminDb();
-  const expenseRef = db.collection("expenses").doc(expenseId);
-  const ledgerRef = db.collection("ledgerEntries").doc(`expense:${expenseId}`);
+  const revenueRef = db.collection("revenue").doc(revenueId);
+  const ledgerRef = db.collection("ledgerEntries").doc(`revenue:${revenueId}`);
 
   const now = FieldValue.serverTimestamp();
-  transaction.update(expenseRef, {
+  transaction.update(revenueRef, {
     archivedAt: now,
     archivedBy,
     revision: expectedRevision + 1,
@@ -158,26 +135,19 @@ export function archiveExpenseInTransaction(
   appendAuditInTransaction(transaction, auditEvent);
 }
 
-/**
- * Returns a paginated list of expenses authorized for the requesting user.
- * Applies own/assigned visibility for Secretary users.
- */
-export async function listExpenses(options: {
-  uid: string;
-  isSuperAdmin: boolean;
+export async function listRevenue(options: {
   month?: string;
   startDate?: string;
   endDate?: string;
-  categoryId?: string;
+  sourceId?: string;
   currency?: string;
-  frequency?: string;
   createdBy?: string;
   cursor?: string;
   pageSize?: number;
-}): Promise<{ items: ExpenseListItem[]; nextCursor: string | null }> {
+}): Promise<{ items: RevenueListItem[]; nextCursor: string | null }> {
   const db = getAdminDb();
   const pageSize = options.pageSize ?? 20;
-  const collection = db.collection("expenses");
+  const collection = db.collection("revenue");
 
   let query: FirebaseFirestore.Query = collection
     .where("archivedAt", "==", null)
@@ -197,18 +167,12 @@ export async function listExpenses(options: {
     }
   }
 
-  if (options.categoryId) query = query.where("categoryId", "==", options.categoryId);
+  if (options.sourceId) query = query.where("sourceId", "==", options.sourceId);
   if (options.currency) query = query.where("currency", "==", options.currency);
-  if (options.frequency) query = query.where("frequency", "==", options.frequency);
   if (options.createdBy) query = query.where("createdBy", "==", options.createdBy);
 
-  // Secretary: own records + explicitly assigned records
-  if (!options.isSuperAdmin) {
-    query = query.where("createdBy", "==", options.uid);
-  }
-
   if (options.cursor) {
-    const cursorSnap = await db.collection("expenses").doc(options.cursor).get();
+    const cursorSnap = await db.collection("revenue").doc(options.cursor).get();
     if (cursorSnap.exists) query = query.startAfter(cursorSnap);
   }
 
@@ -216,18 +180,17 @@ export async function listExpenses(options: {
   const hasMore = snapshot.docs.length > pageSize;
   const docs = hasMore ? snapshot.docs.slice(0, pageSize) : snapshot.docs;
 
-  const items: ExpenseListItem[] = docs.map((doc) => {
-    const record = docToExpenseRecord(doc.id, doc.data());
+  const items: RevenueListItem[] = docs.map((doc) => {
+    const record = docToRevenueRecord(doc.id, doc.data());
     return {
       id: record.id,
-      title: record.title,
+      description: record.description,
       originalAmountMinor: record.originalAmountMinor,
       currency: record.currency,
       baseAmountMinor: record.baseAmountMinor,
       baseCurrency: record.baseCurrency,
-      categoryId: record.categoryId,
+      sourceId: record.sourceId,
       date: record.date,
-      frequency: record.frequency,
       createdBy: record.createdBy,
       createdAt: record.createdAt,
       archivedAt: record.archivedAt,
@@ -241,41 +204,24 @@ export async function listExpenses(options: {
   };
 }
 
-/**
- * Returns the full expense record if the requesting user is authorized to view it.
- * Returns null if not found; throws AuthorizationError if found but not authorized.
- */
-export async function getExpenseById(
+export async function getRevenueById(
   id: string,
-  uid: string,
-  isSuperAdmin: boolean,
-): Promise<ExpenseRecord | null> {
+): Promise<RevenueRecord | null> {
   if (!id || id.includes("/")) return null;
   const db = getAdminDb();
-  const snapshot = await db.collection("expenses").doc(id).get();
+  const snapshot = await db.collection("revenue").doc(id).get();
   if (!snapshot.exists) return null;
 
-  const record = docToExpenseRecord(snapshot.id, snapshot.data()!);
-
-  // Super Admin can see all; Secretary sees own or assigned
-  if (!isSuperAdmin && record.createdBy !== uid && !record.visibleToUserIds.includes(uid)) {
-    return null; // Return null rather than leaking existence of the record
-  }
-
-  return record;
+  return docToRevenueRecord(snapshot.id, snapshot.data()!);
 }
 
-/**
- * Reads an expense inside a transaction for correction/archive operations.
- * Returns null if not found.
- */
-export async function getExpenseInTransaction(
+export async function getRevenueInTransaction(
   transaction: Transaction,
   id: string,
-): Promise<ExpenseRecord | null> {
+): Promise<RevenueRecord | null> {
   if (!id || id.includes("/")) return null;
   const db = getAdminDb();
-  const snapshot = await transaction.get(db.collection("expenses").doc(id));
+  const snapshot = await transaction.get(db.collection("revenue").doc(id));
   if (!snapshot.exists) return null;
-  return docToExpenseRecord(snapshot.id, snapshot.data()!);
+  return docToRevenueRecord(snapshot.id, snapshot.data()!);
 }

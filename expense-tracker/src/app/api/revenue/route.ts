@@ -1,14 +1,15 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
-import { getSessionUser, AuthenticationError, AuthorizationError } from "@/lib/auth/session";
-import { isSuperAdmin, canCreateOperationalRecord } from "@/lib/auth/permissions";
+import { AuthenticationError, AuthorizationError } from "@/lib/auth/session";
 import { assertSameOrigin, readJsonBody, RequestError } from "@/lib/server/request";
-import { listExpenses } from "@/lib/server/repositories/expenses";
-import { createExpenseSchema } from "@/features/expenses/schema";
-import { createExpense, ExpenseServiceError } from "@/features/expenses/service";
-import { getActiveCategories } from "@/lib/server/repositories/categories";
+import { listRevenue } from "@/lib/server/repositories/revenue";
+import { createRevenueSchema } from "@/features/revenue/schema";
+import { RevenueService, RevenueServiceError } from "@/features/revenue/service";
+import { getRevenueSources } from "@/lib/server/repositories/revenue-sources";
 import { getOrCreateDefaultSettings } from "@/lib/server/repositories/settings";
 import { SESSION_COOKIE_NAME } from "@/lib/auth/session-policy";
+import { getSessionUser } from "@/lib/auth/session";
+import { isSuperAdmin } from "@/lib/auth/permissions";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -18,7 +19,7 @@ function json(body: Record<string, unknown>, status = 200) {
 }
 
 function errorResponse(error: unknown) {
-  if (error instanceof ExpenseServiceError) return json({ error: error.message, code: error.code }, error.status);
+  if (error instanceof RevenueServiceError) return json({ error: error.message, code: error.code }, error.status);
   if (error instanceof RequestError) return json({ error: error.message }, error.status);
   if (error instanceof z.ZodError) {
     const fieldErrors: Record<string, string> = {};
@@ -30,20 +31,15 @@ function errorResponse(error: unknown) {
   }
   if (error instanceof AuthenticationError) return json({ error: "Authentication required." }, 401);
   if (error instanceof AuthorizationError) return json({ error: "Access denied." }, 403);
-  // Fail closed for unknown errors; never serialize raw SDK errors
-  console.error("[expense-api]", error instanceof Error ? error.message : "Unknown error");
+  console.error("[revenue-api]", error instanceof Error ? error.message : "Unknown error");
   return json({ error: "An unexpected error occurred." }, 500);
 }
 
-/**
- * POST /api/expenses — Create a new general expense.
- * Requires active operational access. All money is computed server-side.
- */
 export async function POST(request: Request) {
   try {
     assertSameOrigin(request);
     const body = await readJsonBody(request);
-    const input = createExpenseSchema.parse(body);
+    const input = createRevenueSchema.parse(body);
 
     const cookie = request.headers.get("cookie");
     const sessionCookie = cookie
@@ -52,17 +48,14 @@ export async function POST(request: Request) {
       .find((c) => c.startsWith(`${SESSION_COOKIE_NAME}=`))
       ?.slice(SESSION_COOKIE_NAME.length + 1);
 
-    const result = await createExpense(sessionCookie, input);
+    const service = new RevenueService();
+    const result = await service.createRevenue(sessionCookie, input);
     return json({ ok: true, id: result.id, baseAmountMinor: result.baseAmountMinor, baseCurrency: result.baseCurrency }, 201);
   } catch (error) {
     return errorResponse(error);
   }
 }
 
-/**
- * GET /api/expenses — List expenses for the authenticated user.
- * Super Admin sees all; Secretary sees own + explicitly assigned records.
- */
 export async function GET(request: Request) {
   try {
     const cookie = request.headers.get("cookie");
@@ -73,41 +66,36 @@ export async function GET(request: Request) {
       ?.slice(SESSION_COOKIE_NAME.length + 1);
 
     const user = await getSessionUser(sessionCookie);
-    if (!canCreateOperationalRecord(user)) throw new AuthorizationError();
+    if (!isSuperAdmin(user)) throw new AuthorizationError();
 
     const url = new URL(request.url);
     const month = url.searchParams.get("month") ?? undefined;
     const startDate = url.searchParams.get("startDate") ?? undefined;
     const endDate = url.searchParams.get("endDate") ?? undefined;
-    const categoryId = url.searchParams.get("category") ?? undefined;
+    const sourceId = url.searchParams.get("sourceId") ?? undefined;
     const currency = url.searchParams.get("currency") ?? undefined;
-    const frequency = url.searchParams.get("frequency") ?? undefined;
     const createdBy = url.searchParams.get("createdBy") ?? undefined;
     const cursor = url.searchParams.get("cursor") ?? undefined;
 
-    // Also load categories and settings for the UI to render properly
-    const [expensesResult, categories, settings] = await Promise.all([
-      listExpenses({
-        uid: user.uid,
-        isSuperAdmin: isSuperAdmin(user),
+    const [revenueResult, sources, settings] = await Promise.all([
+      listRevenue({
         month,
         startDate,
         endDate,
-        categoryId,
+        sourceId,
         currency,
-        frequency,
         createdBy,
         cursor,
         pageSize: 20,
       }),
-      getActiveCategories(),
+      getRevenueSources(true),
       getOrCreateDefaultSettings(),
     ]);
 
     return json({
-      items: expensesResult.items,
-      nextCursor: expensesResult.nextCursor,
-      categories,
+      items: revenueResult.items,
+      nextCursor: revenueResult.nextCursor,
+      sources,
       baseCurrency: settings.baseCurrency,
     });
   } catch (error) {

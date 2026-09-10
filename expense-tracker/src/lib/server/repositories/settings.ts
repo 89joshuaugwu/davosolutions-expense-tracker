@@ -120,3 +120,32 @@ export async function getSettingsInTransaction(
     updatedAt: typeof data["updatedAt"] === "string" ? data["updatedAt"] : new Date().toISOString(),
   };
 }
+
+/**
+ * Updates the company settings with the provided partial data.
+ */
+export async function updateCompanySettings(
+  updateData: Partial<Omit<CompanySettings, "id" | "baseCurrency" | "baseCurrencyLockedAt" | "createdAt" | "updatedAt">> & { updatedBy: string }
+): Promise<CompanySettings> {
+  const db = getAdminDb();
+  
+  await db.runTransaction(async (transaction) => {
+    const docRef = db.collection("settings").doc(SETTINGS_DOC_ID);
+    const snapshot = await transaction.get(docRef);
+    
+    if (!snapshot.exists) {
+      throw new Error("Settings not found");
+    }
+
+    const updates = {
+      ...updateData,
+      updatedAt: FieldValue.serverTimestamp(),
+    };
+    
+    transaction.update(docRef, updates);
+  });
+
+  const updatedSettings = await getCompanySettings();
+  if (!updatedSettings) throw new Error("Failed to reload settings");
+  return updatedSettings;
+}

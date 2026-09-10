@@ -77,3 +77,89 @@ export async function getEffectiveRateInTransaction(
   const doc = snapshot.docs[0]!;
   return docToExchangeRate(doc.id, doc.data());
 }
+
+/**
+ * Returns all active exchange rates for all currency pairs.
+ */
+export async function getActiveExchangeRates(): Promise<ExchangeRate[]> {
+  const db = getAdminDb();
+  const snapshot = await db
+    .collection("exchangeRates")
+    .where("supersededAt", "==", null)
+    .get();
+
+  return snapshot.docs.map((doc) => docToExchangeRate(doc.id, doc.data()));
+}
+
+/**
+ * Returns the exchange rate history for a specific currency pair, ordered by effective date descending.
+ */
+export async function getExchangeRateHistory(
+  fromCurrency: CurrencyCode,
+  toCurrency: CurrencyCode,
+  limit: number = 20
+): Promise<ExchangeRate[]> {
+  const db = getAdminDb();
+  const snapshot = await db
+    .collection("exchangeRates")
+    .where("fromCurrency", "==", fromCurrency)
+    .where("toCurrency", "==", toCurrency)
+    .orderBy("effectiveFrom", "desc")
+    .limit(limit)
+    .get();
+
+  return snapshot.docs.map((doc) => docToExchangeRate(doc.id, doc.data()));
+}
+
+/**
+ * Adds a new exchange rate inside a transaction.
+ * Automatically supersedes the previously active rate for the same pair.
+ */
+export async function addExchangeRate(
+  fromCurrency: CurrencyCode,
+  toCurrency: CurrencyCode,
+  rate: string,
+  effectiveFrom: DateOnly,
+  setBy: string
+): Promise<ExchangeRate> {
+  const db = getAdminDb();
+
+  return await db.runTransaction(async (transaction) => {
+    // 1. Find the currently active rate
+    const snapshot = await transaction.get(
+      db
+        .collection("exchangeRates")
+        .where("fromCurrency", "==", fromCurrency)
+        .where("toCurrency", "==", toCurrency)
+        .where("supersededAt", "==", null)
+        .limit(1)
+    );
+
+    // 2. Supersede it
+    if (!snapshot.empty) {
+      const activeDoc = snapshot.docs[0]!;
+      transaction.update(activeDoc.ref, {
+        supersededAt: new Date().toISOString()
+      });
+    }
+
+    // 3. Create the new rate
+    const newDocRef = db.collection("exchangeRates").doc();
+    const newData = {
+      fromCurrency,
+      toCurrency,
+      rate,
+      effectiveFrom,
+      setBy,
+      createdAt: new Date().toISOString(),
+      supersededAt: null
+    };
+
+    transaction.set(newDocRef, newData);
+
+    return {
+      id: newDocRef.id,
+      ...newData
+    } as ExchangeRate;
+  });
+}

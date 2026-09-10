@@ -24,7 +24,7 @@ export async function GET(request: Request, context: { params: Promise<{ id: str
     let authorized = user.uid === attachment.uploadedBy || user.role === "super_admin";
 
     // Internal extended fields added during record creation
-    const stored = attachment as Record<string, unknown>;
+    const stored = attachment as unknown as Record<string, unknown>;
     
     if (!authorized && stored.associatedRecordId && stored.associatedRecordKind) {
       const db = getAdminDb();
@@ -36,7 +36,7 @@ export async function GET(request: Request, context: { params: Promise<{ id: str
       else if (stored.associatedRecordKind === "revenue") collectionName = "revenues";
 
       if (collectionName) {
-        const recordSnap = await db.collection(collectionName).doc(stored.associatedRecordId).get();
+        const recordSnap = await db.collection(collectionName).doc(stored.associatedRecordId as string).get();
         if (recordSnap.exists) {
           const record = recordSnap.data() as Record<string, unknown>;
           

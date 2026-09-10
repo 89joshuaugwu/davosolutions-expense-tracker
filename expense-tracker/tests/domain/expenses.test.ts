@@ -87,7 +87,7 @@ describe("createExpenseSchema", () => {
   });
 
   it("defaults notes to empty string", () => {
-    const withoutNotes = { ...valid } as any;
+    const withoutNotes = { ...valid } as Record<string, unknown>;
     delete withoutNotes.notes;
     const result = createExpenseSchema.safeParse(withoutNotes);
     assert.equal(result.success, true);
@@ -95,7 +95,7 @@ describe("createExpenseSchema", () => {
   });
 
   it("defaults attachmentIds to empty array", () => {
-    const withoutAttachments = { ...valid } as any;
+    const withoutAttachments = { ...valid } as Record<string, unknown>;
     delete withoutAttachments.attachmentIds;
     const result = createExpenseSchema.safeParse(withoutAttachments);
     assert.equal(result.success, true);

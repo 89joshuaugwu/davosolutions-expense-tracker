@@ -9,7 +9,7 @@ Welcome to the Davo Solutions Expense Tracker administration guide. This documen
 - Click **Invite User** and provide their email address.
 - Select their role (`Super Admin` or `Secretary`).
 - For Secretaries, configure explicitly which data types they are allowed to view (e.g., Salaries, Transport, Bills).
-- The user will log in via Google. Their access is immediately enforced on the server.
+- Users sign in with the configured Firebase Email/Password account. Their active role and permissions are rechecked on the server.
 
 **Account Recovery & Deactivation**
 - To revoke access, a Super Admin can change a user's role to **Inactive**.
@@ -23,7 +23,7 @@ Welcome to the Davo Solutions Expense Tracker administration guide. This documen
 - **Important**: Changing a rate applies only to *future* transactions. Historical entries retain the exact snapshot of the rate applied at the time of creation.
 
 **Monthly Fund Allocation**
-- A new month requires a **Monthly Fund** allocation (Settings > Monthly Funds).
+- A new month requires a **Monthly Fund** allocation (Monthly Funds).
 - Set the Opening Balance for the given month. This ensures that remaining funds and dashboards calculate margin accurately.
 
 ## 3. Daily Operations & Corrections
@@ -56,7 +56,8 @@ Welcome to the Davo Solutions Expense Tracker administration guide. This documen
 - The trail provides a detailed `Before` and `After` snapshot.
 
 **Data Exports**
-- Use the **Reports** or **Dashboard** to export CSV data. The CSV will perfectly reconcile with the on-screen totals provided the identical date range and category filters are selected.
+- The implemented operational lists and Profit & Loss page provide CSV exports. The dedicated **Reports** Centre is planned and must not be described as available until it is built.
+- CSV data can reconcile with the on-screen totals only when both use the same validated period and filters. This remains an acceptance test, not a release claim.
 
 ## 5. Cleaning Up Test Data
 

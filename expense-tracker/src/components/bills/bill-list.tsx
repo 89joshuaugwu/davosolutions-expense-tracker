@@ -4,6 +4,7 @@ import { useEffect, useState, useCallback } from "react";
 import Link from "next/link";
 import { formatMoney } from "@/domain/money";
 import { AlertCircle, Calendar, Plus, Download } from "lucide-react";
+import { currentBusinessDate } from "@/domain/dates";
 
 interface BillListItem {
   id: string;
@@ -57,7 +58,7 @@ export function BillList() {
   };
 
   // Compute "due today" / "overdue" / "upcoming" locally
-  const today = new Date().toISOString().slice(0, 10);
+  const today = currentBusinessDate();
 
   return (
     <div className="bill-list-page">

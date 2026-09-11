@@ -6,6 +6,7 @@ import { AlertCircle, Check, Loader2, Send } from "lucide-react";
 import type { Category } from "@/domain/models";
 import type { CurrencyCode } from "@/domain/money";
 import { CURRENCIES } from "@/domain/money";
+import { currentBusinessDate, currentReportingMonth } from "@/domain/dates";
 import { AttachmentUpload, type AttachmentItem } from "../attachments/attachment-upload";
 
 interface Props {
@@ -21,12 +22,12 @@ type FormState = "idle" | "submitting" | "success" | "error";
 export function NewSalaryForm({ categories, baseCurrency, enabledCurrencies }: Props) {
   const formId = useId();
   const [workerName, setWorkerName] = useState("");
-  const [period, setPeriod] = useState(new Date().toISOString().slice(0, 7)); // YYYY-MM
+  const [period, setPeriod] = useState(currentReportingMonth());
   const [amount, setAmount] = useState("");
   const [currency, setCurrency] = useState<CurrencyCode>(baseCurrency);
   const [categoryId, setCategoryId] = useState(categories[0]?.id ?? "");
   const [status, setStatus] = useState<"pending" | "paid">("pending");
-  const [paymentDate, setPaymentDate] = useState(new Date().toISOString().slice(0, 10));
+  const [paymentDate, setPaymentDate] = useState(currentBusinessDate());
   const [notes, setNotes] = useState("");
   const [attachments, setAttachments] = useState<AttachmentItem[]>([]);
   const [fieldErrors, setFieldErrors] = useState<FieldErrors>({});
@@ -126,7 +127,7 @@ export function NewSalaryForm({ categories, baseCurrency, enabledCurrencies }: P
             onClick={() => {
               setFormState("idle");
               setWorkerName("");
-              setPeriod(new Date().toISOString().slice(0, 7));
+              setPeriod(currentReportingMonth());
               setAmount("");
               setNotes("");
               setAttachments([]);

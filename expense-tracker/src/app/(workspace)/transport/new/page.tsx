@@ -1,14 +1,18 @@
 import { NewTransportForm } from "@/components/transport/new-transport-form";
 import { requireUser } from "@/lib/auth/session";
+import { redirect } from "next/navigation";
+import { canCreateOperationalRecord } from "@/lib/auth/permissions";
 import { getCompanySettings } from "@/lib/server/repositories/settings";
 import { getAdminDb } from "@/lib/firebase/admin";
+import Link from "next/link";
 
 export const metadata = {
   title: "Log Transport | Davo Expenses",
 };
 
 export default async function NewTransportPage() {
-  await requireUser();
+  const user = await requireUser();
+  if (!canCreateOperationalRecord(user)) redirect("/dashboard?access=denied");
   const settings = await getCompanySettings();
   if (!settings) {
     throw new Error("Settings not found");
@@ -27,10 +31,13 @@ export default async function NewTransportPage() {
     name: String(doc.data().name),
   }));
 
-  // Fallback if none configured
   if (categories.length === 0) {
-    categories.push({ id: "transport-default", name: "General Transport" });
-    // Note: In reality, we'd want a UI prompt to add categories first
+    return <section className="panel state-panel setup-state">
+      <p className="eyebrow">SETUP REQUIRED</p>
+      <h1>Add a transport category first</h1>
+      <p>Transport records must use an active category. Create one in Settings before logging this entry.</p>
+      <Link className="button primary" href="/settings">Open settings</Link>
+    </section>;
   }
 
   return (

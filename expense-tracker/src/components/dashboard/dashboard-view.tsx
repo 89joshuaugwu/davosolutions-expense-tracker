@@ -4,13 +4,14 @@ import { useState, useEffect, useCallback } from "react";
 import Link from "next/link";
 import { AlertCircle, ArrowUpRight, BarChart, Loader2, RefreshCw, Wallet, PiggyBank, Receipt, TrendingUp, TrendingDown, ClipboardList } from "lucide-react";
 import { formatMoney, CURRENCIES } from "@/domain/money";
+import { currentReportingMonth } from "@/domain/dates";
 import { BarChart as RechartsBarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell } from "recharts";
 
 export function DashboardView({ userRole, userName }: { userRole: string, userName: string }) {
   const [data, setData] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
-  const [month, setMonth] = useState(() => new Date().toISOString().slice(0, 7));
+  const [month, setMonth] = useState(() => currentReportingMonth());
 
   const fetchDashboard = useCallback(async () => {
     setLoading(true);

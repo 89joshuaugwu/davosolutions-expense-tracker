@@ -1,6 +1,7 @@
 import { BillDetail } from "@/components/bills/bill-detail";
-import { getSessionUser } from "@/lib/auth/session";
-import { isSuperAdmin } from "@/lib/auth/permissions";
+import { requireUser } from "@/lib/auth/session";
+import { canViewOperationalKind, isSuperAdmin } from "@/lib/auth/permissions";
+import { redirect } from "next/navigation";
 
 export const metadata = {
   title: "Bill Detail | Davo Solutions",
@@ -8,11 +9,12 @@ export const metadata = {
 
 export default async function BillDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
-  const user = await getSessionUser();
-  const superAdmin = user ? isSuperAdmin(user) : false;
+  const user = await requireUser();
+  if (!canViewOperationalKind(user, "bill")) redirect("/dashboard?access=denied");
+  const superAdmin = isSuperAdmin(user);
 
   return (
-    <div className="max-w-6xl mx-auto py-8">
+    <div className="page-stack">
       <BillDetail id={id} isSuperAdmin={superAdmin} />
     </div>
   );

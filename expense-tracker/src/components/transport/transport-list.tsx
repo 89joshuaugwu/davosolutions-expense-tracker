@@ -5,6 +5,7 @@ import Link from "next/link";
 import type { TransportListItem } from "@/lib/server/repositories/transport";
 import { formatMoney } from "@/domain/money";
 import { AlertCircle, ChevronLeft, ChevronRight, Plus, Download } from "lucide-react";
+import { currentReportingMonth } from "@/domain/dates";
 
 export function TransportList() {
   const [logs, setLogs] = useState<TransportListItem[]>([]);
@@ -12,10 +13,7 @@ export function TransportList() {
   const [error, setError] = useState<string | null>(null);
 
   // Default to current month YYYY-MM
-  const [currentMonth, setCurrentMonth] = useState(() => {
-    const d = new Date();
-    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
-  });
+  const [currentMonth, setCurrentMonth] = useState(() => currentReportingMonth());
 
   const fetchLogs = useCallback(async (month: string) => {
     setLoading(true);

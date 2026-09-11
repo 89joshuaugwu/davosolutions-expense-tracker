@@ -4,9 +4,8 @@ import { isSuperAdmin } from "@/lib/auth/permissions";
 import { getBills } from "@/lib/server/repositories/bills";
 import { buildCsv, type CsvColumn } from "@/lib/server/csv";
 import { toDecimalAmount } from "@/domain/money";
-import { getAdminDb } from "@/lib/firebase/admin";
 import type { BillListItem } from "@/lib/server/repositories/bills";
-import { FieldValue } from "firebase-admin/firestore";
+import { recordReportExport } from "@/lib/server/report-export";
 
 export async function GET(request: Request) {
   const user = await getSessionUser();
@@ -37,21 +36,7 @@ export async function GET(request: Request) {
 
     const csvData = buildCsv(bills, columns);
 
-    const db = getAdminDb();
-    const batch = db.batch();
-    const auditRef = db.collection("auditEvents").doc();
-    batch.set(auditRef, {
-      action: "report.export",
-      actor: { uid: user.uid, role: "super_admin" },
-      target: { collection: "bills", id: "csv_export" },
-      reason: "Exported bills to CSV",
-      after: {
-        filterOptions: options,
-        recordCount: bills.length
-      },
-      createdAt: FieldValue.serverTimestamp(),
-    });
-    await batch.commit();
+    await recordReportExport({ user, collection: "bills", report: "bills", filters: { status: options.status }, recordCount: bills.length });
 
     return new NextResponse(csvData, {
       status: 200,

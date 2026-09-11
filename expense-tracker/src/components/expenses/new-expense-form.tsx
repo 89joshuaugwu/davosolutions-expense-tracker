@@ -6,6 +6,7 @@ import { AlertCircle, Check, Loader2, Send } from "lucide-react";
 import type { Category } from "@/domain/models";
 import type { CurrencyCode } from "@/domain/money";
 import { CURRENCIES } from "@/domain/money";
+import { currentBusinessDate } from "@/domain/dates";
 import { AttachmentUpload, type AttachmentItem } from "../attachments/attachment-upload";
 
 interface Props {
@@ -24,7 +25,7 @@ export function NewExpenseForm({ categories, baseCurrency, enabledCurrencies, us
   const [amount, setAmount] = useState("");
   const [currency, setCurrency] = useState<CurrencyCode>(baseCurrency);
   const [categoryId, setCategoryId] = useState(categories[0]?.id ?? "");
-  const [date, setDate] = useState(new Date().toISOString().slice(0, 10));
+  const [date, setDate] = useState(currentBusinessDate());
   const [frequency, setFrequency] = useState<string>("one_time");
   const [notes, setNotes] = useState("");
   const [attachments, setAttachments] = useState<AttachmentItem[]>([]);

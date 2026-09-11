@@ -4,10 +4,8 @@ import { isSuperAdmin } from "@/lib/auth/permissions";
 import { listExpenses } from "@/lib/server/repositories/expenses";
 import { buildCsv, type CsvColumn } from "@/lib/server/csv";
 import { toDecimalAmount } from "@/domain/money";
-import { appendAudit } from "@/lib/server/audit";
-import { getAdminDb } from "@/lib/firebase/admin";
 import type { ExpenseListItem } from "@/lib/server/repositories/expenses";
-import { FieldValue } from "firebase-admin/firestore";
+import { recordReportExport } from "@/lib/server/report-export";
 
 export async function GET(request: Request) {
   const user = await getSessionUser();
@@ -48,22 +46,11 @@ export async function GET(request: Request) {
 
     const csvData = buildCsv(items, columns);
 
-    // Audit Log
-    const db = getAdminDb();
-    const batch = db.batch();
-    const auditRef = db.collection("auditEvents").doc();
-    batch.set(auditRef, {
-      action: "report.export",
-      actor: { uid: user.uid, role: "super_admin" },
-      target: { collection: "expenses", id: "csv_export" },
-      reason: "Exported expenses to CSV",
-      after: {
-        filterOptions: options,
-        recordCount: items.length
-      },
-      createdAt: FieldValue.serverTimestamp(),
-    });
-    await batch.commit();
+    await recordReportExport({ user, collection: "expenses", report: "expenses", filters: {
+      month: options.month, startDate: options.startDate, endDate: options.endDate,
+      categoryId: options.categoryId, currency: options.currency, frequency: options.frequency,
+      createdBy: options.createdBy,
+    }, recordCount: items.length });
 
     return new NextResponse(csvData, {
       status: 200,

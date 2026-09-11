@@ -10,7 +10,7 @@ This document explains the foundation and the contracts that later features must
 - Target production domain: `expenses.davosolutions.com`.
 - No Ads Manager credentials, Firebase project configuration, data, routes, authentication context, or operational services are copied into this application.
 - Existing Davo artwork/color references are presentation assets only. The compact Davo mark and blue/navy palette connect the products; their data remains separate.
-- The foundation provides a working visual preview, authentication/session building blocks, protected route structure, finance primitives, security policy, and tests. It does not yet implement business persistence, live reporting, reminders, or deployment.
+- The source tree now includes business persistence, live dashboard/P&L queries, reminders, attachments, administration, and CSV export routes. The next product boundary is the Super Admin Reports Centre. The acceptance matrix distinguishes those source artifacts from emulator, live-service, and production proof.
 
 ## Request and data flow
 
@@ -32,7 +32,7 @@ Financial write -> validate input and persisted references
                 -> invalidate/refetch only authorized views
 ```
 
-The financial-write path is the next implementation slice. A shell, model type, or interface does not mean that path exists yet.
+Financial writes are implemented for the supported domains. A route or interface remains insufficient evidence of correct persistence, authorization, retry behavior, or production readiness; those require the acceptance checks in `acceptance-matrix.md`.
 
 ## Trust boundaries
 

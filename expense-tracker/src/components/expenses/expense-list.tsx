@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback } from "react";
 import Link from "next/link";
 import { AlertCircle, ArrowUpRight, Loader2, ReceiptText, RefreshCw, Download } from "lucide-react";
 import { CURRENCIES, formatMoney, type CurrencyCode } from "@/domain/money";
+import { currentReportingMonth } from "@/domain/dates";
 import type { Category } from "@/domain/models";
 import type { Frequency } from "@/domain/models";
 
@@ -39,7 +40,7 @@ export function ExpenseList({ initialMonth }: Props) {
   const [categories, setCategories] = useState<Category[]>([]);
   const [, setBaseCurrency] = useState<CurrencyCode>("NGN");
   const [nextCursor, setNextCursor] = useState<string | null>(null);
-  const [month, setMonth] = useState(initialMonth ?? new Date().toISOString().slice(0, 7));
+  const [month, setMonth] = useState(initialMonth ?? currentReportingMonth());
   const [loading, setLoading] = useState(true);
   const [loadingMore, setLoadingMore] = useState(false);
   const [error, setError] = useState("");

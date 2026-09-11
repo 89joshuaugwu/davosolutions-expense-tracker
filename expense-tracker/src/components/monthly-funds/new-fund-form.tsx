@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { AlertCircle, ArrowLeft, Save } from "lucide-react";
 import Link from "next/link";
+import { currentReportingMonth } from "@/domain/dates";
 
 export function NewFundForm() {
   const router = useRouter();
@@ -13,7 +14,7 @@ export function NewFundForm() {
   const [idempotencyKey] = useState(() => crypto.randomUUID());
 
   // Default to current month YYYY-MM
-  const currentMonth = new Date().toISOString().slice(0, 7);
+  const currentMonth = currentReportingMonth();
 
   const [formData, setFormData] = useState({
     month: currentMonth,

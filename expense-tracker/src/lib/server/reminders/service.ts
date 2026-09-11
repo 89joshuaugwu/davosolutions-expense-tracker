@@ -6,6 +6,7 @@ import { sendReminderEmail, isSmtpConfigured } from "./mailer";
 import { appendAudit } from "../audit";
 import { formatMoney } from "../../../domain/money";
 import type { CurrencyCode } from "../../../domain/money";
+import { currentBusinessDate } from "../../../domain/dates";
 
 const REMINDER_ATTEMPTS_COLLECTION = "reminderAttempts";
 const MAX_RETRIES = 3;
@@ -214,7 +215,7 @@ export async function sendTestReminder(recipientEmail: string, recipientName: st
     billName: "Test Bill — Office Internet",
     provider: "ISP Provider Co.",
     amountFormatted: "₦ 25,000.00",
-    dueDate: new Date().toISOString().slice(0, 10),
+    dueDate: currentBusinessDate(),
     leadDays: 3,
     companyName: "Davo Solutions",
   });

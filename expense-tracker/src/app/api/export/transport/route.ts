@@ -4,9 +4,8 @@ import { isSuperAdmin } from "@/lib/auth/permissions";
 import { getTransportList } from "@/lib/server/repositories/transport";
 import { buildCsv, type CsvColumn } from "@/lib/server/csv";
 import { toDecimalAmount } from "@/domain/money";
-import { getAdminDb } from "@/lib/firebase/admin";
 import type { TransportListItem } from "@/lib/server/repositories/transport";
-import { FieldValue } from "firebase-admin/firestore";
+import { recordReportExport } from "@/lib/server/report-export";
 
 export async function GET(request: Request) {
   const user = await getSessionUser();
@@ -40,21 +39,7 @@ export async function GET(request: Request) {
 
     const csvData = buildCsv(items, columns);
 
-    const db = getAdminDb();
-    const batch = db.batch();
-    const auditRef = db.collection("auditEvents").doc();
-    batch.set(auditRef, {
-      action: "report.export",
-      actor: { uid: user.uid, role: "super_admin" },
-      target: { collection: "transportLogs", id: "csv_export" },
-      reason: "Exported transport to CSV",
-      after: {
-        filterOptions: options,
-        recordCount: items.length
-      },
-      createdAt: FieldValue.serverTimestamp(),
-    });
-    await batch.commit();
+    await recordReportExport({ user, collection: "transportLogs", report: "transport", filters: { month: options.month }, recordCount: items.length });
 
     return new NextResponse(csvData, {
       status: 200,

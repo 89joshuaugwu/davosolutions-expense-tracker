@@ -1,6 +1,6 @@
 # Acceptance and verification matrix
 
-Updated: 2026-09-07. This is the evidence ledger for scope v1.2, not a claim that the release is complete. Use `../todo.md` for task instructions and `architecture.md` for invariant explanations. Record test names/commands or dated manual checks when changing a status.
+Updated: 2026-09-11. This is the evidence ledger for scope v1.2, not a claim that the release is complete. Use `../todo.md` and `current-delivery-audit.md` for task order, and `architecture.md` for invariant explanations. Record test names/commands or dated manual checks when changing a status.
 
 Status meanings: **Foundation** = a primitive, policy, type, or preview exists; **Pending** = complete feature/integration is not implemented or has not been verified; **Passed locally** = the named local check actually passed; **Passed live** = a deployed integration was exercised and evidence recorded. Never promote a feature from Foundation to Passed because its navigation item or TypeScript interface exists.
 

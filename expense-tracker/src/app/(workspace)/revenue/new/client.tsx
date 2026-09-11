@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import type { RevenueSource, CompanySettings } from "@/domain/models";
 
 import type { CurrencyCode } from "@/domain/money";
+import { currentBusinessDate } from "@/domain/dates";
 
 // Use crypto.randomUUID() if available, otherwise a simple fallback
 function generateIdempotencyKey() {
@@ -23,7 +24,7 @@ export function RevenueFormClient({
 }) {
   const router = useRouter();
   
-  const [date, setDate] = useState(() => new Date().toISOString().split("T")[0]);
+  const [date, setDate] = useState(() => currentBusinessDate());
   const [sourceId, setSourceId] = useState("");
   const [amount, setAmount] = useState("");
   const [currency, setCurrency] = useState<CurrencyCode>(settings.baseCurrency);

@@ -1,6 +1,14 @@
 # Davo Solutions Expenses & Profit Tracker: implementation handoff
 
-Updated: 2026-09-07. Working directory: `expense-tracker/`. Source: `Davo_Solutions_Expenses_Profit_Tracker_Scope.md` v1.2. The user explicitly requested the foundation and this handoff; the older awaiting-approval footer in the scope does not block that authorized work.
+Updated: 2026-09-11. Working directory: `expense-tracker/`. Source: `Davo_Solutions_Expenses_Profit_Tracker_Scope.md` v1.2. The user explicitly requested the foundation and this handoff; the older awaiting-approval footer in the scope does not block that authorized work.
+
+## Current delivery truth — read before selecting the next task
+
+The implementation has advanced beyond the original foundation description in this file: expense, salary, transport, bills, monthly funds, settings/FX, revenue, dashboard/P&L, users, audit, reminder, attachment, and CSV-export source files now exist. Treat a checked box as an implementation claim, **not** release proof. `docs/acceptance-matrix.md` remains the authoritative evidence ledger and still records most end-to-end, emulator, responsive, and production checks as pending.
+
+The next approved product work is documented in `docs/current-delivery-audit.md`. It corrects the current priorities: the navigation advertises `/reports`, but no concrete Reports route, report UI, audit-trail export, or FX-detail export exists. Build the Reports Centre and shared UI foundation before calling R1 complete. Then complete responsive/accessibility QA and reconcile deployment documentation with demonstrated production evidence.
+
+The malformed appended session block at the end of this file was removed on 2026-09-11. Preserve the phase contracts below, but use the current delivery audit and the acceptance matrix when deciding status; older session notes remain historical context, not release evidence.
 
 ## Start here when changing models
 
@@ -321,6 +329,6 @@ and docs/acceptance-matrix.md with exact evidence. Report the completed behavior
 verification, remaining limitations, and the next task ID concisely.
 ```
 
- -   * * 2 0 2 6 - 0 9 - 1 1      D 1   i m p l e m e n t e d : * *   D 1 . 1 - D 1 . 6   c o m p l e t e d .   B u i l t   t h e   D a s h b o a r d S e r v i c e   t h a t   f e t c h e s   l e d g e r   e n t r i e s   a n d   u s e s   t h e   d o m a i n ' s   \ c a l c u l a t e F i n a n c i a l S u m m a r y \   f u n c t i o n   t o   s e c u r e l y   c o m p u t e   P & L   t o t a l s   i n   r e a l   t i m e .   B u i l t   t h e   A P I   r o u t e   \ / a p i / d a s h b o a r d \   a n d   t h e   d a s h b o a r d   v i e w   U I   w h i c h   c o n d i t i o n a l l y   d i s p l a y s   f u l l   a n a l y t i c s   f o r   p e r m i t t e d   u s e r s   o r   a   s i m p l i f i e d   q u i c k - a c t i o n   v i e w   f o r   s e c r e t a r i e s .   R e - u s e d   t h e   d a s h b o a r d   A P I   t o   p o p u l a t e   t h e   \ / p r o f i t - l o s s \   r e c o n c i l i a t i o n   p a g e .   U s e d   R e c h a r t s   f o r   f r o n t e n d   d a t a   v i s u a l i z a t i o n .   F i x e d   t h e   B i l l s   l i s t   v i e w   t o   b y p a s s   F i r e s t o r e   c o m p o s i t e   i n d e x   e r r o r s   b y   d o i n g   i n - m e m o r y   i n e q u a l i t y   f i l t e r i n g .   R e c o m m e n d e d   n e x t   s l i c e :   * * R 1   ( R e p o r t s ) * *   o r   * * A 1   ( U s e r s   &   R o l e s ) * * . 
-- **2026-09-11  D1 implemented:** D1.1-D1.6 completed. Built the DashboardService that fetches ledger entries and securely computes P&L totals. Built the API route and the dashboard view UI.
-- **2026-09-11  A3 and R2 linting implemented:** A3.1-A3.4 completed for bill reminders. Created mailer service and /api/cron/reminders endpoint. R2.2 completed by running a full check (typecheck, lint, test) and fixing all actual errors. Adjusted eslint.config.mjs for warnings on any usage. Verified 121 warnings but 0 errors for strict compliance. Recommended next slice: remaining R2 acceptance checks or deployment setup.
+- **2026-09-11 — Legacy log repaired:** Removed a malformed duplicate session record. Use the source tree, `docs/current-delivery-audit.md`, and `docs/acceptance-matrix.md` as the authoritative current handoff.
+- **2026-09-11 — D1 implemented:** D1.1-D1.6 completed. Built the DashboardService that fetches ledger entries and securely computes P&L totals. Built the API route and the dashboard view UI.
+- **2026-09-11 — A3 and R2 linting implemented:** A3.1-A3.4 completed for bill reminders. Created mailer service and `/api/cron/reminders` endpoint. R2.2 completed by running a full check (typecheck, lint, test) and fixing all actual errors. The ESLint configuration was adjusted so `any` usage is reported as a warning; the latest local check still has 121 warnings and 0 errors. Recommended next slice: U0 → U1 in `docs/current-delivery-audit.md`.

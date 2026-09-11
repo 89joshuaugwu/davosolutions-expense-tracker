@@ -4,6 +4,7 @@ import { useState, useCallback, useEffect } from "react";
 import Link from "next/link";
 import { AlertCircle, ArrowUpRight, Loader2, RefreshCw, Users, Download } from "lucide-react";
 import { CURRENCIES, formatMoney, type CurrencyCode } from "@/domain/money";
+import { currentReportingMonth } from "@/domain/dates";
 
 interface SalaryItem {
   id: string;
@@ -27,7 +28,7 @@ interface Props {
 export function SalaryList({ initialPeriod }: Props) {
   const [items, setItems] = useState<SalaryItem[]>([]);
   const [nextCursor, setNextCursor] = useState<string | null>(null);
-  const [period, setPeriod] = useState(initialPeriod ?? new Date().toISOString().slice(0, 7));
+  const [period, setPeriod] = useState(initialPeriod ?? currentReportingMonth());
   const [statusFilter, setStatusFilter] = useState<"all" | "pending" | "paid">("all");
   const [loading, setLoading] = useState(true);
   const [loadingMore, setLoadingMore] = useState(false);

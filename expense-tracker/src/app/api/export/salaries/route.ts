@@ -4,9 +4,8 @@ import { isSuperAdmin } from "@/lib/auth/permissions";
 import { getSalaries } from "@/lib/server/repositories/salaries";
 import { buildCsv, type CsvColumn } from "@/lib/server/csv";
 import { toDecimalAmount } from "@/domain/money";
-import { getAdminDb } from "@/lib/firebase/admin";
 import type { SalaryDetail } from "@/lib/server/repositories/salaries";
-import { FieldValue } from "firebase-admin/firestore";
+import { recordReportExport } from "@/lib/server/report-export";
 
 export async function GET(request: Request) {
   const user = await getSessionUser();
@@ -43,21 +42,9 @@ export async function GET(request: Request) {
 
     const csvData = buildCsv(salaries, columns);
 
-    const db = getAdminDb();
-    const batch = db.batch();
-    const auditRef = db.collection("auditEvents").doc();
-    batch.set(auditRef, {
-      action: "report.export",
-      actor: { uid: user.uid, role: "super_admin" },
-      target: { collection: "salaries", id: "csv_export" },
-      reason: "Exported salaries to CSV",
-      after: {
-        filterOptions: filters,
-        recordCount: salaries.length
-      },
-      createdAt: FieldValue.serverTimestamp(),
-    });
-    await batch.commit();
+    await recordReportExport({ user, collection: "salaries", report: "salaries", filters: {
+      period: filters.period, workerName: filters.workerName, status: filters.status,
+    }, recordCount: salaries.length });
 
     return new NextResponse(csvData, {
       status: 200,

@@ -3,12 +3,13 @@
 import { useState, useEffect, useCallback } from "react";
 import { AlertCircle, ArrowDown, ArrowUp, Loader2, RefreshCw, Download } from "lucide-react";
 import { formatMoney } from "@/domain/money";
+import { currentReportingMonth } from "@/domain/dates";
 
 export function ProfitLossView() {
   const [data, setData] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
-  const [month, setMonth] = useState(() => new Date().toISOString().slice(0, 7));
+  const [month, setMonth] = useState(() => currentReportingMonth());
 
   const fetchDashboard = useCallback(async () => {
     setLoading(true);

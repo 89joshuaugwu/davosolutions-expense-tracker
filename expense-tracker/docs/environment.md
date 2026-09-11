@@ -48,7 +48,7 @@ Store images as image assets. Plan to store PDFs and office documents as raw ori
 | `SMTP_FROM` | Reminder email phase | A verified sender address/name allowed by that mailbox. |
 | `CRON_SECRET` | Scheduled reminders phase | Generate a sufficiently random server secret. Require the scheduler's bearer token and persist reminder idempotency keys. Never expose it to the browser. |
 
-Reminder recipients, lead days (7/3/1), company timezone (`Africa/Lagos`), fiscal-year start, categories, manual FX rates, and default currency (`NGN`) are company settings stored in Firestore, not secrets or environment variables. They still require implementation and validation. No SMTP code or cron schedule is enabled by this foundation. Firebase currently sends password-reset links itself; SMTP is for later bill reminders/invitations if selected.
+Reminder recipients, lead days (7/3/1), company timezone (`Africa/Lagos`), fiscal-year start, categories, manual FX rates, and default currency (`NGN`) are company settings stored in Firestore, not secrets or environment variables. The source tree includes SMTP reminder and cron-route code, but no controlled delivery, scheduler, or production evidence is recorded. Firebase currently sends password-reset links itself; SMTP is used by the reminder workflow.
 
 ## Local setup utilities
 

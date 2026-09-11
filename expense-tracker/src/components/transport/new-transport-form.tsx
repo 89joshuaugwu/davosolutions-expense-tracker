@@ -5,6 +5,7 @@ import Link from "next/link";
 import { AlertCircle, Check, Loader2, Send } from "lucide-react";
 import type { CurrencyCode } from "@/domain/money";
 import { CURRENCIES } from "@/domain/money";
+import { currentBusinessDate } from "@/domain/dates";
 
 interface Props {
   categories: { id: string; name: string }[];
@@ -16,7 +17,7 @@ type FormState = "idle" | "submitting" | "success" | "error";
 
 export function NewTransportForm({ categories, baseCurrency }: Props) {
   const formId = useId();
-  const [date, setDate] = useState(new Date().toISOString().slice(0, 10));
+  const [date, setDate] = useState(currentBusinessDate());
   const [currency, setCurrency] = useState<CurrencyCode>(baseCurrency);
   const [categoryId, setCategoryId] = useState(categories[0]?.id ?? "");
   const [morningAmount, setMorningAmount] = useState("");

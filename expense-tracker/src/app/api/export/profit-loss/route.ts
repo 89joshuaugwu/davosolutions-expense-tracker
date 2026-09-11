@@ -3,9 +3,8 @@ import { getSessionUser } from "@/lib/auth/session";
 import { isSuperAdmin } from "@/lib/auth/permissions";
 import { DashboardService } from "@/features/dashboard/service";
 import { toDecimalAmount } from "@/domain/money";
-import { getAdminDb } from "@/lib/firebase/admin";
-import { FieldValue } from "firebase-admin/firestore";
-import type { ReportingMonth } from "@/domain/dates";
+import { assertReportingMonth, currentReportingMonth, type ReportingMonth } from "@/domain/dates";
+import { recordReportExport } from "@/lib/server/report-export";
 
 function escapeCsvValue(value: any): string {
   if (value === null || value === undefined) return "";
@@ -24,7 +23,8 @@ export async function GET(request: Request) {
   }
 
   const { searchParams } = new URL(request.url);
-  const month = searchParams.get("month") || new Date().toISOString().slice(0, 7) as ReportingMonth;
+  const month = searchParams.get("month") || currentReportingMonth();
+  try { assertReportingMonth(month); } catch { return NextResponse.json({ error: "Month must use YYYY-MM." }, { status: 400 }); }
 
   try {
     const analytics = await DashboardService.getAnalytics(user, month as ReportingMonth);
@@ -59,21 +59,7 @@ export async function GET(request: Request) {
 
     const csvData = lines.join("\n");
 
-    const db = getAdminDb();
-    const batch = db.batch();
-    const auditRef = db.collection("auditEvents").doc();
-    batch.set(auditRef, {
-      action: "report.export",
-      actor: { uid: user.uid, role: "super_admin" },
-      target: { collection: "ledgerEntries", id: "csv_export" },
-      reason: `Exported P&L for ${month}`,
-      after: {
-        filterOptions: { month },
-        recordCount: 1 // Representing the consolidated report
-      },
-      createdAt: FieldValue.serverTimestamp(),
-    });
-    await batch.commit();
+    await recordReportExport({ user, collection: "ledgerEntries", report: "profit and loss", filters: { month }, recordCount: 1 });
 
     return new NextResponse(csvData, {
       status: 200,

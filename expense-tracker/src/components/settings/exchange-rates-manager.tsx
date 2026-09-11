@@ -4,6 +4,7 @@ import { useState } from "react";
 import { Loader2, Plus, Clock, Globe } from "lucide-react";
 import type { CompanySettings, ExchangeRate } from "@/domain/models";
 import { CURRENCIES, type CurrencyCode } from "@/domain/money";
+import { currentBusinessDate } from "@/domain/dates";
 
 interface Props {
   settings: CompanySettings;
@@ -20,7 +21,7 @@ export function ExchangeRatesManager({ settings, activeRates, onRateAdded }: Pro
     settings.enabledCurrencies.find(c => c !== settings.baseCurrency) || "USD"
   );
   const [rate, setRate] = useState("");
-  const [effectiveFrom, setEffectiveFrom] = useState(new Date().toISOString().slice(0, 10));
+  const [effectiveFrom, setEffectiveFrom] = useState(currentBusinessDate());
 
   const availableCurrencies = settings.enabledCurrencies.filter(c => c !== settings.baseCurrency);
 

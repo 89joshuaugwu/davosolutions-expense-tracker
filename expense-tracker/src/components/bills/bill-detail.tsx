@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import type { Bill, BillPayment } from "@/domain/models";
 import { formatMoney } from "@/domain/money";
 import { AlertCircle, ArrowLeft, Calendar, CheckCircle2, DollarSign } from "lucide-react";
+import { currentBusinessDate } from "@/domain/dates";
 
 export function BillDetail({ id, isSuperAdmin }: { id: string; isSuperAdmin: boolean }) {
   const router = useRouter();
@@ -17,7 +18,7 @@ export function BillDetail({ id, isSuperAdmin }: { id: string; isSuperAdmin: boo
   
   // Payment form state
   const [payAmount, setPayAmount] = useState("");
-  const [payDate, setPayDate] = useState(new Date().toISOString().slice(0, 10));
+  const [payDate, setPayDate] = useState(currentBusinessDate());
   const [payNotes, setPayNotes] = useState("");
   const [idempotencyKey, setIdempotencyKey] = useState(() => crypto.randomUUID());
 
@@ -111,7 +112,7 @@ export function BillDetail({ id, isSuperAdmin }: { id: string; isSuperAdmin: boo
   if (!data?.bill) return null;
 
   const { bill, payments } = data;
-  const isOverdue = bill.status === "active" && bill.nextDueDate < new Date().toISOString().slice(0, 10);
+  const isOverdue = bill.status === "active" && bill.nextDueDate < currentBusinessDate();
 
   return (
     <div className="max-w-5xl mx-auto space-y-8">

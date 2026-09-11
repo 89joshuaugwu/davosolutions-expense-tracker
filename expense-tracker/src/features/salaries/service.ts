@@ -4,7 +4,7 @@ import { getAdminDb } from "../../lib/firebase/admin";
 import { getSessionUser, AuthorizationError } from "../../lib/auth/session";
 import { canCreateOperationalRecord, canCorrectOperationalRecord } from "../../lib/auth/permissions";
 import { createMoneySnapshot, type CurrencyCode, type MoneySnapshot, CURRENCIES } from "../../domain/money";
-import { type DateOnly, type ReportingMonth } from "../../domain/dates";
+import { currentBusinessDate, type DateOnly, type ReportingMonth } from "../../domain/dates";
 import type { SalaryLog } from "../../domain/models";
 import type { AuditEvent } from "../../lib/server/audit-model";
 import { getSettingsInTransaction, lockBaseCurrencyInTransaction } from "../../lib/server/repositories/settings";
@@ -73,7 +73,7 @@ export async function createSalary(input: CreateSalaryInput) {
     let rateDate: DateOnly;
 
     // Use paymentDate for the rate if paid, otherwise use current date for the snapshot (though not posted)
-    const activeDate = (input.paymentDate || new Date().toISOString().slice(0, 10)) as DateOnly;
+    const activeDate = (input.paymentDate || currentBusinessDate()) as DateOnly;
 
     if (currency === baseCurrency) {
       exchangeRate = "1";
@@ -215,7 +215,7 @@ export async function correctSalary(id: string, input: CorrectSalaryInput) {
       const targetPaymentDate = input.paymentDate || current.paymentDate;
 
       // Rate date logic:
-      const activeDate = (targetPaymentDate || new Date().toISOString().slice(0, 10)) as DateOnly;
+      const activeDate = (targetPaymentDate || currentBusinessDate()) as DateOnly;
       
       let exchangeRate: string;
       let rateDate: DateOnly;

@@ -1,8 +1,8 @@
 # Davo Solutions · Expenses & Profit Tracker
 
-A standalone Next.js foundation for Davo's internal finance workspace. The original scope is preserved in `Davo_Solutions_Expenses_Profit_Tracker_Scope.md`. Target product domain: `https://expenses.davosolutions.com`.
+A standalone Next.js finance workspace for Davo. The original scope is preserved in `Davo_Solutions_Expenses_Profit_Tracker_Scope.md`; the target domain is `https://expenses.davosolutions.com`.
 
-**This is the foundation, not the finished expense application.** It includes a polished interactive design preview, protected app structure, Firebase session/auth helpers, exact financial calculations, an audit contract, database rules, and a detailed implementation handoff. Expense saving and the remaining business workflows are intentionally still listed in [`todo.md`](todo.md).
+The current source tree includes expenses, salaries, transport, bills, monthly funds, settings/FX, revenue, dashboard/P&L, users, audit logs, reminders, attachments, and CSV exports. It still needs the Reports Centre, a shared live-app UI pass, complete acceptance testing, and demonstrated production evidence. Start with [`docs/current-delivery-audit.md`](docs/current-delivery-audit.md), then use [`todo.md`](todo.md) and [`docs/acceptance-matrix.md`](docs/acceptance-matrix.md) for task and evidence status.
 
 ## Start locally
 
@@ -23,15 +23,15 @@ Open [the design preview](http://localhost:3000/preview) to review the interface
 - `/preview?section=expenses`: search, category filtering, sort control, and keyboard-accessible expense details.
 - Month switching includes September, August, and a deliberate empty-state example.
 - `/login`, `/forgot-password`: Firebase identity/session and reset forms. Missing configuration disables sign-in with a clear setup message.
-- Real `/dashboard`, `/expenses`, `/salaries`, `/transport`, `/bills`, and management routes: server-protected shell and honest unfinished states. No sample values are shown as real company balances.
+- Real workspace routes use authorized server data and must never fall back to preview fixtures. `/reports` is currently a protected placeholder rather than a finished report workspace; it is the next product feature.
 
 ## Configuration
 
-Read [`docs/environment.md`](docs/environment.md) for every variable, its source, and the scope phase that uses it. Firebase web identifiers and a dedicated Admin service account are configured locally. **Cloudinary is selected for images, PDFs and documents**; its server-only credentials and preset are configured and verified through a read-only API check. Firebase Storage is not used. Upload/download workflows, SMTP and cron integrations remain future tasks. V1 uses manual exchange rates and requires no exchange-rate API key.
+Read [`docs/environment.md`](docs/environment.md) for every variable, its source, and the scope phase that uses it. Firebase web identifiers and a dedicated Admin service account are configured locally. **Cloudinary is selected for images, PDFs and documents**; its server-only credentials and preset are configured and verified through a read-only API check. Firebase Storage is not used. Attachment, SMTP, and cron source modules exist, but private-file and controlled reminder-delivery acceptance remain pending. V1 uses manual exchange rates and requires no exchange-rate API key.
 
 `npm run env:check` validates configuration without contacting Firebase or printing values. The local `APP_URL` is HTTP localhost for development. Set an HTTPS origin for production; `.env.local` localhost does not enable sign-in under `npm start` because production sessions intentionally require HTTPS.
 
-Enable Firebase Email/Password authentication, configure authorized domains and reset emails, create Firestore, and deploy the checked-in rules in the **dedicated expense project**. Configure separate Vercel environment values before deployment. Cloud provisioning and DNS have not been performed by this foundation.
+Enable Firebase Email/Password authentication, configure authorized domains and reset emails, create Firestore, and deploy the checked-in rules in the **dedicated expense project**. Configure separate Vercel environment values before deployment. This repository does not itself prove current production configuration, DNS, or deployment health; verify them against the production domain and record the result in the acceptance matrix before calling the release complete.
 
 Create the first Firebase Auth identity through a trusted process. Then use its UID with the bootstrap CLI, which checks the named project and runs a dry run by default:
 
@@ -95,20 +95,15 @@ The audit helper uses create-only writes and belongs inside the same transaction
 
 Branding reuses the Davo compact mark and palette from the sibling Ads Manager. Its source and configuration have not been modified.
 
-## Foundation verification · 7 September 2026
+## Current local verification · 11 September 2026
 
-- Dependency installation and production build completed successfully on Node 24.20.0.
-- Unit suite after Cloudinary configuration: 33 passed, 0 failed; 1 Firestore/Storage emulator test explicitly skipped.
-- Local environment validation passed: required settings present, project IDs agree, private key parses. No live Firebase request was made by that check.
-- `npm run check`: passed; strict typecheck and lint finished with no errors or warnings.
-- `npm run build`: passed after the final implementation changes.
-- `npm run test:e2e`: 10 passed in 45.6 seconds using headless Edge at 1440×1100 and 390×844. Checked unauthorized redirects, disabled unconfigured login, admin KPIs/month controls, all three chart series, secretary preview boundaries, search/category filters, detail dialog/Escape, and mobile navigation/no page overflow. Desktop/mobile dashboard screenshots were also inspected.
-- Runtime dependency audit reported 6 moderate entries, all in the Firebase Admin transitive dependency chain around the `uuid` buffer-bounds advisory. No high or critical entries. Do not run `npm audit fix --force`: npm proposes downgrading Firebase Admin to 10.x. Review a compatible upstream fix before release; see `todo.md` F1.8.
-- Real login/password-reset delivery, deployed rules, live Firestore persistence, SMTP, receipt storage, and production domain are not externally verified or deployed.
-- Cloudinary follow-up: `npm run env:check`, `npm run check`, and `npm run build` passed. `npm run cloudinary:check` verified credentials/preset through a read-only API request; the preset is currently unsigned without authenticated delivery. E4 tracks secure upload/download implementation. No remote files or settings changed.
+- `npm run check` passed: 64 tests passed and 1 emulator-dependent test skipped. Type generation and TypeScript passed. ESLint exited successfully with **121 warnings**, so it is not a warning-free baseline.
+- `npm run build` passed and confirms all implemented routes. It also confirms that no concrete `/reports` route has been built.
+- Earlier recorded browser coverage was limited to the public preview at 390px and 1440px. The 360px, 768px, 1280px, live-data, accessibility, and Reports workflows remain pending.
+- Local environment validation and the earlier read-only Cloudinary preset check do not verify Firebase persistence, private delivery, SMTP delivery, scheduled jobs, or the production domain.
 
 On this Windows host, the sandbox prevented `tsx` from reading user information (`uv_os_get_passwd ENOMEM`) and prevented clean Playwright process shutdown. The final tests were run successfully with the required permission. This is an execution-environment constraint, not an application test failure.
 
 ## Continue with another model
 
-Read [`AGENTS.md`](AGENTS.md), then [`todo.md`](todo.md). It contains task IDs, dependencies, source-file guidance, transaction contracts, edge cases, acceptance criteria, and a ready-to-paste continuation prompt. The next business slice is **E1 → E2 → E3: references/validation, atomic expense creation, then the real form/register**. Complete Firebase integration checks in F1 as the required accounts and services become available.
+Read [`AGENTS.md`](AGENTS.md), [`todo.md`](todo.md), and [`docs/current-delivery-audit.md`](docs/current-delivery-audit.md). The next product slice is **U0 → U1**: make the handoff truthful, then implement the Super Admin Reports Centre and its shared reporting boundary. Complete Firebase, attachment, SMTP, accessibility, emulator, and production checks only with actual evidence.

@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { AlertCircle, ArrowLeft, Save } from "lucide-react";
 import Link from "next/link";
+import { currentBusinessDate } from "@/domain/dates";
 
 interface Category {
   id: string;
@@ -26,7 +27,7 @@ export function NewBillForm() {
     expectedAmount: "",
     currency: "NGN",
     frequency: "monthly",
-    nextDueDate: new Date().toISOString().slice(0, 10),
+    nextDueDate: currentBusinessDate(),
     notes: "",
   });
 
@@ -72,65 +73,61 @@ export function NewBillForm() {
   };
 
   return (
-    <div className="max-w-2xl mx-auto space-y-6">
-      <div className="flex items-center gap-4">
-        <Link
-          href="/bills"
-          className="p-2 text-gray-500 hover:text-gray-900 hover:bg-gray-100 rounded-full transition-colors"
-        >
-          <ArrowLeft className="w-5 h-5" />
-        </Link>
-        <h1 className="text-2xl font-bold text-gray-900">Create Scheduled Bill</h1>
+    <div className="form-page">
+      <div className="page-heading compact-heading">
+        <div>
+          <p className="eyebrow">BILLS & REMINDERS</p>
+          <h1>Create scheduled bill</h1>
+          <p>Define the commitment now. An expense is posted only when a due occurrence is paid.</p>
+        </div>
+        <Link href="/bills" className="button secondary"><ArrowLeft size={16} /> Back to bills</Link>
       </div>
 
-      <div className="bg-white border border-gray-200 rounded-xl shadow-sm overflow-hidden">
-        <div className="px-6 py-4 border-b border-gray-100 bg-gray-50/50">
-          <p className="text-sm text-gray-600">
-            Define a recurring or one-time bill. Creating a bill does <span className="font-semibold text-gray-900">not</span> post an expense until it is explicitly paid.
-          </p>
-        </div>
-
-        <form onSubmit={handleSubmit} className="p-6 space-y-6">
+      <section className="panel form-panel">
+        <form onSubmit={handleSubmit}>
           {error && (
-            <div className="p-4 bg-red-50 border-l-4 border-red-500 rounded-r-md flex items-start">
-              <AlertCircle className="w-5 h-5 text-red-500 mt-0.5 mr-3 flex-shrink-0" />
-              <p className="text-red-800 text-sm">{error}</p>
+            <div className="form-error" role="alert">
+              <AlertCircle size={17} />
+              <p>{error}</p>
             </div>
           )}
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-            <div className="space-y-2">
-              <label htmlFor="name" className="block text-sm font-medium text-gray-700">Bill Name</label>
+          {!loadingCats && categories.length === 0 ? <div className="notice warning" role="status">
+            No active bill category is configured. Add one in <Link className="text-link" href="/settings">Settings</Link> before saving this bill.
+          </div> : null}
+
+          <div className="form-row">
+            <div className="form-group">
+              <label htmlFor="name">Bill name</label>
               <input
                 id="name"
                 required
                 value={formData.name}
                 onChange={e => setFormData(prev => ({ ...prev, name: e.target.value }))}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 placeholder="e.g. Office Internet"
               />
             </div>
-            <div className="space-y-2">
-              <label htmlFor="provider" className="block text-sm font-medium text-gray-700">Provider</label>
+            <div className="form-group">
+              <label htmlFor="provider">Provider</label>
               <input
                 id="provider"
                 required
                 value={formData.provider}
                 onChange={e => setFormData(prev => ({ ...prev, provider: e.target.value }))}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 placeholder="e.g. MTN"
               />
             </div>
+          </div>
 
-            <div className="space-y-2">
-              <label htmlFor="category" className="block text-sm font-medium text-gray-700">Category</label>
+          <div className="form-row">
+            <div className="form-group">
+              <label htmlFor="category">Category</label>
               <select
                 id="category"
                 required
                 disabled={loadingCats}
                 value={formData.categoryId}
                 onChange={e => setFormData(prev => ({ ...prev, categoryId: e.target.value }))}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
               >
                 {categories.map(c => (
                   <option key={c.id} value={c.id}>{c.name}</option>
@@ -138,24 +135,25 @@ export function NewBillForm() {
               </select>
             </div>
 
-            <div className="space-y-2">
-              <label htmlFor="frequency" className="block text-sm font-medium text-gray-700">Frequency</label>
+            <div className="form-group">
+              <label htmlFor="frequency">Frequency</label>
               <select
                 id="frequency"
                 required
                 value={formData.frequency}
                 onChange={e => setFormData(prev => ({ ...prev, frequency: e.target.value }))}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
               >
                 <option value="monthly">Monthly</option>
                 <option value="yearly">Yearly</option>
                 <option value="one_time">One-Time</option>
               </select>
             </div>
+          </div>
 
-            <div className="space-y-2">
-              <label htmlFor="amount" className="block text-sm font-medium text-gray-700">Expected Amount</label>
-              <div className="flex gap-2">
+          <div className="form-row">
+            <div className="form-group">
+              <label htmlFor="amount">Expected amount</label>
+              <div className="split-input">
                 <input
                   id="amount"
                   type="number"
@@ -164,13 +162,12 @@ export function NewBillForm() {
                   required
                   value={formData.expectedAmount}
                   onChange={e => setFormData(prev => ({ ...prev, expectedAmount: e.target.value }))}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                   placeholder="0.00"
                 />
                 <select
                   value={formData.currency}
                   onChange={e => setFormData(prev => ({ ...prev, currency: e.target.value }))}
-                  className="w-24 px-2 py-2 border border-gray-300 rounded-lg bg-gray-50 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  aria-label="Currency"
                 >
                   <option value="NGN">NGN</option>
                   <option value="USD">USD</option>
@@ -180,49 +177,47 @@ export function NewBillForm() {
               </div>
             </div>
 
-            <div className="space-y-2">
-              <label htmlFor="nextDueDate" className="block text-sm font-medium text-gray-700">Next Due Date</label>
+            <div className="form-group">
+              <label htmlFor="nextDueDate">Next due date</label>
               <input
                 id="nextDueDate"
                 type="date"
                 required
                 value={formData.nextDueDate}
                 onChange={e => setFormData(prev => ({ ...prev, nextDueDate: e.target.value }))}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
               />
             </div>
           </div>
 
-          <div className="space-y-2">
-            <label htmlFor="notes" className="block text-sm font-medium text-gray-700">Notes (Optional)</label>
+          <div className="form-group">
+            <label htmlFor="notes">Notes <span className="optional-label">Optional</span></label>
             <textarea
               id="notes"
               rows={3}
               value={formData.notes}
               onChange={e => setFormData(prev => ({ ...prev, notes: e.target.value }))}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 resize-none"
               placeholder="Any additional information..."
             />
           </div>
 
-          <div className="pt-4 border-t border-gray-100 flex justify-end">
+          <div className="form-actions">
+            <Link href="/bills" className="button secondary">Cancel</Link>
             <button
               type="submit"
-              disabled={submitting}
-              className="inline-flex items-center px-6 py-2.5 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors shadow-sm"
+              disabled={submitting || loadingCats || categories.length === 0}
+              className="button primary"
             >
               {submitting ? (
                 <>Saving...</>
               ) : (
                 <>
-                  <Save className="w-5 h-5 mr-2" />
-                  Save Scheduled Bill
+                  <Save size={16} /> Save scheduled bill
                 </>
               )}
             </button>
           </div>
         </form>
-      </div>
+      </section>
     </div>
   );
 }

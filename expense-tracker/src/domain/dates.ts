@@ -27,6 +27,27 @@ export function reportingMonthOf(date: DateOnly): ReportingMonth {
   return date.slice(0, 7);
 }
 
+/** Returns the current reporting month in the company's business timezone. */
+export function currentReportingMonth(now: Date = new Date(), timeZone = "Africa/Lagos"): ReportingMonth {
+  const parts = new Intl.DateTimeFormat("en-CA", { timeZone, year: "numeric", month: "2-digit" }).formatToParts(now);
+  const year = parts.find((part) => part.type === "year")?.value;
+  const month = parts.find((part) => part.type === "month")?.value;
+  const value = `${year}-${month}`;
+  assertReportingMonth(value);
+  return value;
+}
+
+/** Returns today's calendar date in the company's business timezone. */
+export function currentBusinessDate(now: Date = new Date(), timeZone = "Africa/Lagos"): DateOnly {
+  const parts = new Intl.DateTimeFormat("en-CA", { timeZone, year: "numeric", month: "2-digit", day: "2-digit" }).formatToParts(now);
+  const year = parts.find((part) => part.type === "year")?.value;
+  const month = parts.find((part) => part.type === "month")?.value;
+  const day = parts.find((part) => part.type === "day")?.value;
+  const value = `${year}-${month}-${day}`;
+  assertDateOnly(value);
+  return value;
+}
+
 export function monthlyFundId(month: ReportingMonth): string {
   assertReportingMonth(month);
   return month;

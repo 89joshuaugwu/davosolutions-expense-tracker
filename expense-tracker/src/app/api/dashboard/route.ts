@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { getSessionUser } from "@/lib/auth/session";
 import { DashboardService } from "@/features/dashboard/service";
 import { canViewOperationalTotals } from "@/lib/auth/permissions";
-import { reportingMonthOf } from "@/domain/dates";
+import { assertReportingMonth, currentReportingMonth } from "@/domain/dates";
 
 export async function GET(request: Request) {
   const user = await getSessionUser();
@@ -15,9 +15,15 @@ export async function GET(request: Request) {
   
   // Use current month if not provided, else use the provided month
   // Validate basic format YYYY-MM
-  const month = monthParam && /^\d{4}-\d{2}$/.test(monthParam) 
-    ? monthParam 
-    : reportingMonthOf(new Date().toISOString().split("T")[0]);
+  let month = currentReportingMonth();
+  if (monthParam) {
+    try {
+      assertReportingMonth(monthParam);
+      month = monthParam;
+    } catch {
+      return NextResponse.json({ error: "Month must use YYYY-MM." }, { status: 400 });
+    }
+  }
 
   try {
     let analytics = null;

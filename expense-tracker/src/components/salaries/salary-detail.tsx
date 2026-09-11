@@ -5,6 +5,7 @@ import Link from "next/link";
 import { AlertCircle, ArrowLeft, Calendar, Check, Loader2, LockKeyhole, Trash2, Paperclip, FileText, Image as ImageIcon } from "lucide-react";
 import { CURRENCIES, formatMoney, type CurrencyCode } from "@/domain/money";
 import type { SalaryLog } from "@/domain/models";
+import { currentBusinessDate } from "@/domain/dates";
 
 export function SalaryDetail({ salaryId, isSuperAdmin }: { salaryId: string; isSuperAdmin: boolean }) {
   const [salary, setSalary] = useState<SalaryLog | null>(null);
@@ -65,7 +66,7 @@ export function SalaryDetail({ salaryId, isSuperAdmin }: { salaryId: string; isS
       const response = await fetch(`/api/salaries/${salaryId}/pay`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ paymentDate: new Date().toISOString().slice(0, 10), expectedRevision: salary?.revision }),
+        body: JSON.stringify({ paymentDate: currentBusinessDate(), expectedRevision: salary?.revision }),
       });
       if (!response.ok) {
         const data = await response.json();

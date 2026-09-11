@@ -4,6 +4,7 @@ import { useState } from "react";
 import type { CompanySettings, ExchangeRate } from "@/domain/models";
 import { GeneralSettingsForm } from "@/components/settings/general-settings-form";
 import { ExchangeRatesManager } from "@/components/settings/exchange-rates-manager";
+import { CategoryManager } from "@/components/settings/category-manager";
 
 interface Props {
   initialSettings: CompanySettings;
@@ -46,6 +47,8 @@ export function SettingsClient({ initialSettings, initialRates }: Props) {
           activeRates={rates} 
           onRateAdded={handleRateAdded} 
         />
+
+        <CategoryManager />
       </div>
     </div>
   );

@@ -227,8 +227,8 @@ Acceptance: paying one due occurrence yields one expense and one payment history
 
 ### A2 — Audit UI and coverage [P0; grows with every previous slice]
 
-- [ ] **A2.1** Build Super Admin audit list/detail with actor/action/target/date filters, cursor pagination, safe structured before/after display, reason, and request metadata when available. No audit update/delete endpoint or editable UI.
-- [ ] **A2.2** Audit financial creates/corrections/archives/recalculations, funds, rates, users/roles, categories/settings, auth events, bill states/reminders, attachment actions, and exports. For financial changes, audit remains in the same transaction as the change; rejected operations do not create successful mutation events.
+- [x] **A2.1** Build Super Admin audit list/detail with actor/action/target/date filters, cursor pagination, safe structured before/after display, reason, and request metadata when available. No audit update/delete endpoint or editable UI.
+- [x] **A2.2** Audit financial creates/corrections/archives/recalculations, funds, rates, users/roles, categories/settings, auth events, bill states/reminders, attachment actions, and exports. For financial changes, audit remains in the same transaction as the change; rejected operations do not create successful mutation events.
 - [ ] **A2.3** Add integration tests proving successful financial mutations always have matching immutable history, failure leaves no partial finance state, Secretary cannot read history, and tokens/secrets/receipt contents never appear in logged fields.
 
 ### A3 — Reliable bill reminder delivery [P0; depends on B1/A1 and SMTP]

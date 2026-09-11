@@ -5,6 +5,10 @@ const nextConfig: NextConfig = {
   distDir: process.env.DAVO_E2E === "1" ? ".next-e2e" : ".next",
   poweredByHeader: false,
   serverExternalPackages: ["firebase-admin"],
+
+  // Allow local network IP for Hot Module Replacement
+  allowedDevOrigins: ["192.168.1.4"],
+
   async headers() {
     return [{
       source: "/:path*", headers: [
@@ -18,4 +22,5 @@ const nextConfig: NextConfig = {
     }];
   },
 };
+
 export default nextConfig;

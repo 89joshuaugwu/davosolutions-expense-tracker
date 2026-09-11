@@ -69,139 +69,135 @@ export function RevenueFormClient({
   };
 
   return (
-    <div className="layout-panel max-w-2xl mx-auto">
-      <div className="mb-6">
-        <h1 className="text-2xl font-semibold text-gray-900">Record Revenue</h1>
-        <p className="text-sm text-gray-500 mt-1">Log new income for your company.</p>
+    <div>
+      <div className="page-heading">
+        <div>
+          <h1>Record Revenue</h1>
+          <p>Log new income for your company.</p>
+        </div>
       </div>
 
       {error && (
-        <div className="mb-6 p-4 bg-red-50 text-red-700 rounded-lg text-sm">
+        <p className="form-error" role="alert">
           {error}
-        </div>
+        </p>
       )}
 
-      <form onSubmit={handleSubmit} className="bg-white p-6 rounded-xl border border-gray-200 shadow-sm space-y-6">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Date <span className="text-red-500">*</span>
-            </label>
+      <div className="panel form-panel" style={{ maxWidth: 640 }}>
+        <form onSubmit={handleSubmit}>
+          <div className="form-row">
+            <div className="form-group">
+              <label>
+                Date <span style={{ color: "#c4403b" }}>*</span>
+              </label>
+              <input
+                type="date"
+                required
+                value={date}
+                onChange={(e) => setDate(e.target.value)}
+                disabled={loading}
+              />
+            </div>
+
+            <div className="form-group">
+              <label>
+                Revenue Source <span style={{ color: "#c4403b" }}>*</span>
+              </label>
+              <select
+                required
+                value={sourceId}
+                onChange={(e) => setSourceId(e.target.value)}
+                disabled={loading}
+              >
+                <option value="" disabled>Select a source</option>
+                {sources.map(s => (
+                  <option key={s.id} value={s.id}>{s.name}</option>
+                ))}
+              </select>
+              {sources.length === 0 && (
+                <p className="field-hint">
+                  No active sources. Please add one first.
+                </p>
+              )}
+            </div>
+          </div>
+
+          <div className="form-row">
+            <div className="form-group">
+              <label>
+                Amount <span style={{ color: "#c4403b" }}>*</span>
+              </label>
+              <input
+                type="number"
+                required
+                min="0.01"
+                step="0.01"
+                value={amount}
+                onChange={(e) => setAmount(e.target.value)}
+                placeholder="0.00"
+                disabled={loading}
+              />
+            </div>
+
+            <div className="form-group">
+              <label>
+                Currency <span style={{ color: "#c4403b" }}>*</span>
+              </label>
+              <select
+                required
+                value={currency}
+                onChange={(e) => setCurrency(e.target.value as CurrencyCode)}
+                disabled={loading}
+              >
+                {settings.enabledCurrencies.map(c => (
+                  <option key={c} value={c}>{c}</option>
+                ))}
+              </select>
+            </div>
+          </div>
+
+          <div className="form-group">
+            <label>Description</label>
             <input
-              type="date"
-              required
-              value={date}
-              onChange={(e) => setDate(e.target.value)}
-              className="input-field"
+              type="text"
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
+              placeholder="Short description of the income"
               disabled={loading}
+              maxLength={200}
             />
           </div>
 
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Revenue Source <span className="text-red-500">*</span>
-            </label>
-            <select
-              required
-              value={sourceId}
-              onChange={(e) => setSourceId(e.target.value)}
-              className="input-field"
+          <div className="form-group">
+            <label>Additional Notes</label>
+            <textarea
+              value={notes}
+              onChange={(e) => setNotes(e.target.value)}
+              placeholder="Any extra details..."
               disabled={loading}
-            >
-              <option value="" disabled>Select a source</option>
-              {sources.map(s => (
-                <option key={s.id} value={s.id}>{s.name}</option>
-              ))}
-            </select>
-            {sources.length === 0 && (
-              <p className="text-xs text-red-500 mt-1">
-                No active sources. Please add one first.
-              </p>
-            )}
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Amount <span className="text-red-500">*</span>
-            </label>
-            <input
-              type="number"
-              required
-              min="0.01"
-              step="0.01"
-              value={amount}
-              onChange={(e) => setAmount(e.target.value)}
-              placeholder="0.00"
-              className="input-field"
-              disabled={loading}
+              maxLength={1000}
             />
           </div>
 
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Currency <span className="text-red-500">*</span>
-            </label>
-            <select
-              required
-              value={currency}
-              onChange={(e) => setCurrency(e.target.value as CurrencyCode)}
-              className="input-field"
+          <div className="form-actions">
+            <button
+              type="button"
+              onClick={() => router.back()}
+              className="button secondary"
               disabled={loading}
             >
-              {settings.enabledCurrencies.map(c => (
-                <option key={c} value={c}>{c}</option>
-              ))}
-            </select>
+              Cancel
+            </button>
+            <button
+              type="submit"
+              className="button primary"
+              disabled={loading || !sourceId || !amount}
+            >
+              {loading ? "Saving..." : "Record Revenue"}
+            </button>
           </div>
-        </div>
-
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
-            Description
-          </label>
-          <input
-            type="text"
-            value={description}
-            onChange={(e) => setDescription(e.target.value)}
-            placeholder="Short description of the income"
-            className="input-field"
-            disabled={loading}
-            maxLength={200}
-          />
-        </div>
-
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
-            Additional Notes
-          </label>
-          <textarea
-            value={notes}
-            onChange={(e) => setNotes(e.target.value)}
-            placeholder="Any extra details..."
-            className="input-field min-h-[100px] py-2"
-            disabled={loading}
-            maxLength={1000}
-          />
-        </div>
-
-        <div className="flex justify-end gap-3 pt-4 border-t border-gray-100">
-          <button
-            type="button"
-            onClick={() => router.back()}
-            className="btn-secondary"
-            disabled={loading}
-          >
-            Cancel
-          </button>
-          <button
-            type="submit"
-            className="btn-primary"
-            disabled={loading || !sourceId || !amount}
-          >
-            {loading ? "Saving..." : "Record Revenue"}
-          </button>
-        </div>
-      </form>
+        </form>
+      </div>
     </div>
   );
 }

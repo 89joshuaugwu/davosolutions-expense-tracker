@@ -111,143 +111,137 @@ export function RevenueClient() {
   };
 
   return (
-    <div className="layout-panel">
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
+    <div>
+      <div className="page-heading">
         <div>
-          <h1 className="text-2xl font-semibold text-gray-900">Revenue</h1>
-          <p className="text-sm text-gray-500 mt-1">Manage and track your company's income.</p>
+          <h1>Revenue</h1>
+          <p>Manage and track your company's income.</p>
         </div>
-        <div className="flex gap-2">
-          <Link href="/revenue/sources" className="btn-secondary">
+        <div className="heading-actions">
+          <Link href="/revenue/sources" className="button secondary">
             Manage Sources
           </Link>
-          <Link href="/revenue/new" className="btn-primary">
+          <Link href="/revenue/new" className="button primary">
             Record Revenue
           </Link>
         </div>
       </div>
 
-      <div className="bg-white p-4 rounded-xl border border-gray-200 shadow-sm mb-6 flex flex-wrap gap-4 items-end">
-        <div>
-          <label className="block text-xs font-medium text-gray-700 mb-1">Start Date</label>
+      <div className="list-controls" style={{ flexWrap: 'wrap' }}>
+        <div className="form-group" style={{ marginBottom: 0 }}>
           <input 
             type="date" 
             value={startDate} 
             onChange={e => setStartDate(e.target.value)}
-            className="input-field py-1.5 text-sm"
+            aria-label="Start Date"
           />
         </div>
-        <div>
-          <label className="block text-xs font-medium text-gray-700 mb-1">End Date</label>
+        <div className="form-group" style={{ marginBottom: 0 }}>
           <input 
             type="date" 
             value={endDate} 
             onChange={e => setEndDate(e.target.value)}
-            className="input-field py-1.5 text-sm"
+            aria-label="End Date"
           />
         </div>
-        <div>
-          <label className="block text-xs font-medium text-gray-700 mb-1">Source</label>
-          <select 
-            value={sourceId} 
-            onChange={e => setSourceId(e.target.value)}
-            className="input-field py-1.5 text-sm"
-          >
-            <option value="">All Sources</option>
-            {sources.map(s => (
-              <option key={s.id} value={s.id}>{s.name}</option>
-            ))}
-          </select>
-        </div>
-        <div>
-          <label className="block text-xs font-medium text-gray-700 mb-1">Currency</label>
-          <select 
-            value={currency} 
-            onChange={e => setCurrency(e.target.value)}
-            className="input-field py-1.5 text-sm"
-          >
-            <option value="">All Currencies</option>
-            <option value="NGN">NGN</option>
-            <option value="USD">USD</option>
-            <option value="EUR">EUR</option>
-            <option value="GBP">GBP</option>
-          </select>
-        </div>
+        <select 
+          value={sourceId} 
+          onChange={e => setSourceId(e.target.value)}
+          className="filter-select"
+        >
+          <option value="">All Sources</option>
+          {sources.map(s => (
+            <option key={s.id} value={s.id}>{s.name}</option>
+          ))}
+        </select>
+        <select 
+          value={currency} 
+          onChange={e => setCurrency(e.target.value)}
+          className="filter-select"
+        >
+          <option value="">All Currencies</option>
+          <option value="NGN">NGN</option>
+          <option value="USD">USD</option>
+          <option value="EUR">EUR</option>
+          <option value="GBP">GBP</option>
+        </select>
         {(startDate || endDate || sourceId || currency) && (
-          <button onClick={handleResetFilters} className="btn-secondary py-1.5 text-sm h-[34px]">
+          <button onClick={handleResetFilters} className="button secondary">
             Reset Filters
           </button>
         )}
       </div>
 
       {error && (
-        <div className="mb-6 p-4 bg-red-50 text-red-700 rounded-lg text-sm">
+        <p className="form-error" role="alert">
           {error}
-        </div>
+        </p>
       )}
 
-      <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
-        {loading && items.length === 0 ? (
-          <div className="p-8 text-center text-gray-500">Loading revenue records...</div>
-        ) : items.length === 0 ? (
-          <div className="p-12 text-center">
-            <h3 className="text-lg font-medium text-gray-900 mb-2">No revenue found</h3>
-            <p className="text-gray-500 mb-6">There are no revenue records matching your criteria.</p>
-            <Link href="/revenue/new" className="btn-primary">
-              Record Revenue
-            </Link>
-          </div>
-        ) : (
-          <div className="overflow-x-auto">
-            <table className="w-full text-left border-collapse">
-              <thead>
-                <tr className="bg-gray-50 border-b border-gray-200">
-                  <th className="p-4 text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
-                  <th className="p-4 text-xs font-medium text-gray-500 uppercase tracking-wider">Source</th>
-                  <th className="p-4 text-xs font-medium text-gray-500 uppercase tracking-wider">Description</th>
-                  <th className="p-4 text-xs font-medium text-gray-500 uppercase tracking-wider">Original Amount</th>
-                  <th className="p-4 text-xs font-medium text-gray-500 uppercase tracking-wider">Converted ({baseCurrency})</th>
-                  <th className="p-4 text-xs font-medium text-gray-500 uppercase tracking-wider">Action</th>
+      {loading && items.length === 0 ? (
+        <div className="loading-state">
+          <p>Loading revenue records…</p>
+        </div>
+      ) : items.length === 0 ? (
+        <div className="panel empty-state">
+          <h3>No revenue found</h3>
+          <p>There are no revenue records matching your criteria.</p>
+          <Link className="button primary" href="/revenue/new">
+            Record Revenue
+          </Link>
+        </div>
+      ) : (
+        <div className="table-container">
+          <table className="data-table">
+            <thead>
+              <tr>
+                <th>Date</th>
+                <th>Source</th>
+                <th>Description</th>
+                <th className="text-right">Amount</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody>
+              {items.map((item) => (
+                <tr key={item.id} className={item.archivedAt ? "archived-row" : ""}>
+                  <td className="date-cell">{item.date}</td>
+                  <td>
+                    <span className="badge neutral">
+                      {getSourceName(item.sourceId)}
+                    </span>
+                  </td>
+                  <td>
+                    <strong>{item.description || "—"}</strong>
+                  </td>
+                  <td className="text-right amount-cell">
+                    <strong>{formatMoney(item.originalAmountMinor, item.currency)}</strong>
+                    {item.currency !== item.baseCurrency && (
+                      <small className="original-amount">
+                        {formatMoney(item.baseAmountMinor, item.baseCurrency)} base
+                      </small>
+                    )}
+                  </td>
+                  <td>
+                    <Link href={`/revenue/${item.id}`} className="icon-button" aria-label={`View revenue from ${item.date}`}>
+                      →
+                    </Link>
+                  </td>
                 </tr>
-              </thead>
-              <tbody className="divide-y divide-gray-200">
-                {items.map((item) => (
-                  <tr key={item.id} className="hover:bg-gray-50 transition-colors">
-                    <td className="p-4 text-sm text-gray-900 whitespace-nowrap">{item.date}</td>
-                    <td className="p-4 text-sm text-gray-900">
-                      <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-blue-100 text-blue-800">
-                        {getSourceName(item.sourceId)}
-                      </span>
-                    </td>
-                    <td className="p-4 text-sm text-gray-500 max-w-xs truncate">{item.description || "—"}</td>
-                    <td className="p-4 text-sm text-gray-900 font-medium">
-                      {formatMoney(item.originalAmountMinor, item.currency)}
-                    </td>
-                    <td className="p-4 text-sm text-gray-500">
-                      {item.currency !== item.baseCurrency ? formatMoney(item.baseAmountMinor, item.baseCurrency) : "—"}
-                    </td>
-                    <td className="p-4 text-sm">
-                      <Link href={`/revenue/${item.id}`} className="text-blue-600 hover:text-blue-800 font-medium">
-                        View
-                      </Link>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        )}
-      </div>
-
-      {nextCursor && (
-        <div className="mt-6 text-center">
-          <button 
-            onClick={() => loadData(nextCursor)} 
-            disabled={loadingMore}
-            className="btn-secondary"
-          >
-            {loadingMore ? "Loading..." : "Load More"}
-          </button>
+              ))}
+            </tbody>
+          </table>
+          {nextCursor && (
+            <div style={{ textAlign: "center", marginTop: "16px" }}>
+              <button
+                className="button secondary"
+                onClick={() => loadData(nextCursor)}
+                disabled={loadingMore}
+              >
+                {loadingMore ? "Loading…" : "Load more"}
+              </button>
+            </div>
+          )}
         </div>
       )}
     </div>

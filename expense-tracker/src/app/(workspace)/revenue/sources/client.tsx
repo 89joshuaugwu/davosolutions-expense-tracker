@@ -77,48 +77,47 @@ export function RevenueSourcesClient({ initialSources }: { initialSources: Reven
   };
 
   return (
-    <div className="layout-panel">
-      <div className="flex items-center justify-between mb-6">
+    <div>
+      <div className="page-heading">
         <div>
-          <h1 className="text-2xl font-semibold text-gray-900">Revenue Sources</h1>
-          <p className="text-sm text-gray-500 mt-1">
+          <h1>Revenue Sources</h1>
+          <p>
             Manage the sources from which your company generates revenue.
           </p>
         </div>
-        <button
-          onClick={() => setIsAdding(true)}
-          className="btn-primary"
-          disabled={isAdding}
-        >
-          Add Source
-        </button>
+        <div className="heading-actions">
+          <button
+            onClick={() => setIsAdding(true)}
+            className="button primary"
+            disabled={isAdding}
+          >
+            Add Source
+          </button>
+        </div>
       </div>
 
       {error && (
-        <div className="mb-6 p-4 bg-red-50 text-red-700 rounded-lg text-sm">
+        <p className="form-error" role="alert">
           {error}
-        </div>
+        </p>
       )}
 
       {isAdding && (
-        <div className="mb-6 bg-white p-4 rounded-xl border border-gray-200 shadow-sm">
-          <form onSubmit={handleAdd} className="flex gap-4 items-end">
-            <div className="flex-1">
-              <label htmlFor="newSourceName" className="block text-sm font-medium text-gray-700 mb-1">
-                Source Name
-              </label>
+        <div className="panel" style={{ padding: "20px", marginBottom: "20px" }}>
+          <form onSubmit={handleAdd} style={{ display: "flex", gap: "15px", alignItems: "flex-end" }}>
+            <div className="form-group" style={{ flex: 1, marginBottom: 0 }}>
+              <label htmlFor="newSourceName">Source Name</label>
               <input
                 id="newSourceName"
                 type="text"
                 value={newName}
                 onChange={(e) => setNewName(e.target.value)}
                 placeholder="e.g., Consulting, Product Sales"
-                className="input-field"
                 required
                 disabled={loading}
               />
             </div>
-            <div className="flex gap-2">
+            <div style={{ display: "flex", gap: "10px" }}>
               <button
                 type="button"
                 onClick={() => {
@@ -126,12 +125,12 @@ export function RevenueSourcesClient({ initialSources }: { initialSources: Reven
                   setNewName("");
                   setError("");
                 }}
-                className="btn-secondary"
+                className="button secondary"
                 disabled={loading}
               >
                 Cancel
               </button>
-              <button type="submit" className="btn-primary" disabled={loading || !newName.trim()}>
+              <button type="submit" className="button primary" disabled={loading || !newName.trim()}>
                 {loading ? "Adding..." : "Add"}
               </button>
             </div>
@@ -139,35 +138,46 @@ export function RevenueSourcesClient({ initialSources }: { initialSources: Reven
         </div>
       )}
 
-      <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
-        {sources.length === 0 ? (
-          <div className="p-8 text-center text-gray-500">
-            No revenue sources found. Add one to get started.
-          </div>
-        ) : (
-          <ul className="divide-y divide-gray-200">
-            {sources.map((source) => (
-              <li key={source.id} className="p-4 flex items-center justify-between hover:bg-gray-50 transition-colors">
-                <div>
-                  <h3 className={`font-medium ${source.status === "archived" ? "text-gray-400 line-through" : "text-gray-900"}`}>
-                    {source.name}
-                  </h3>
-                  <p className="text-xs text-gray-500 mt-1">
-                    Status: <span className="capitalize">{source.status}</span>
-                  </p>
-                </div>
-                <div>
-                  <button
-                    onClick={() => handleToggleStatus(source)}
-                    className="text-sm font-medium text-blue-600 hover:text-blue-800"
-                  >
-                    {source.status === "active" ? "Archive" : "Activate"}
-                  </button>
-                </div>
-              </li>
-            ))}
-          </ul>
-        )}
+      <div className="table-container">
+        <table className="data-table">
+          <thead>
+            <tr>
+              <th>Source Name</th>
+              <th>Status</th>
+              <th className="text-right">Action</th>
+            </tr>
+          </thead>
+          <tbody>
+            {sources.length === 0 ? (
+              <tr>
+                <td colSpan={3} style={{ textAlign: "center", padding: "40px", color: "var(--muted)" }}>
+                  No revenue sources found. Add one to get started.
+                </td>
+              </tr>
+            ) : (
+              sources.map((source) => (
+                <tr key={source.id} className={source.status === "archived" ? "archived-row" : ""}>
+                  <td>
+                    <strong>{source.name}</strong>
+                  </td>
+                  <td>
+                    <span className={`badge ${source.status === "active" ? "success" : "neutral"}`}>
+                      {source.status}
+                    </span>
+                  </td>
+                  <td className="text-right">
+                    <button
+                      onClick={() => handleToggleStatus(source)}
+                      className="text-button"
+                    >
+                      {source.status === "active" ? "Archive" : "Activate"}
+                    </button>
+                  </td>
+                </tr>
+              ))
+            )}
+          </tbody>
+        </table>
       </div>
     </div>
   );

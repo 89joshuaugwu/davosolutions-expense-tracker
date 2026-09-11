@@ -177,15 +177,19 @@ export function SalaryList({ initialPeriod }: Props) {
           </table>
 
           {nextCursor && (
-            <div className="table-footer">
+            <div style={{ textAlign: "center", marginTop: "16px" }}>
               <button
+                className="button secondary"
                 onClick={() => fetchSalaries(nextCursor)}
                 disabled={loadingMore}
-                className="button secondary"
-                style={{ width: '100%', border: 'none', background: 'transparent' }}
               >
-                {loadingMore ? <Loader2 size={16} className="spin" /> : null}
-                {loadingMore ? "Loading..." : "Load More"}
+                {loadingMore ? (
+                  <>
+                    <Loader2 size={16} className="spin" /> Loading…
+                  </>
+                ) : (
+                  "Load more"
+                )}
               </button>
             </div>
           )}

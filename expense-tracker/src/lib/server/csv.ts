@@ -1,5 +1,6 @@
 import "server-only";
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export interface CsvColumn<T> {
   header: string;
   key: Extract<keyof T, string>;
@@ -11,6 +12,7 @@ export interface CsvColumn<T> {
  * Neutralizes spreadsheet formula injection (CSV Injection) by prepending
  * an apostrophe if the value starts with dangerous characters.
  */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 function escapeCsvValue(value: any): string {
   if (value === null || value === undefined) {
     return "";
@@ -36,6 +38,7 @@ function escapeCsvValue(value: any): string {
 /**
  * Builds a CSV string from an array of records and a column definition.
  */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function buildCsv<T extends Record<string, any>>(data: T[], columns: CsvColumn<T>[]): string {
   if (!data || !columns || columns.length === 0) {
     return "";

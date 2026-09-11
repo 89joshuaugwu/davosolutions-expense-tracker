@@ -53,7 +53,7 @@ export class MonthlyFundsService {
       const fundId = createMonthlyFundInTransaction(
         t,
         {
-          month: data.month as any,
+          month: data.month as import("@/domain/dates").ReportingMonth,
           source: data.source || "",
           originalAmountMinor: amountMinor,
           currency: data.currency,
@@ -91,7 +91,7 @@ export class MonthlyFundsService {
     if (!settings) throw new Error("System settings missing");
 
     const summary = calculateFinancialSummary({
-      month: month as any,
+      month: month as import("@/domain/dates").ReportingMonth,
       baseCurrency: settings.baseCurrency,
       openingFundMinor: fund ? fund.baseAmountMinor : 0,
       postings,

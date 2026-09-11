@@ -117,7 +117,7 @@ export class BillsService {
       const snap = await t.get(billRef);
       if (!snap.exists) throw new Error("Not found");
 
-      const existing = snap.data() as any;
+      const existing = snap.data() as unknown as import("@/domain/models").Bill;
       if (!isSuperAdmin(user) && !existing.visibleToUserIds.includes(user.uid)) {
         throw new Error("Forbidden");
       }
@@ -148,7 +148,7 @@ export class BillsService {
       const snap = await t.get(billRef);
       if (!snap.exists) throw new Error("Bill not found");
 
-      const bill = snap.data() as any;
+      const bill = snap.data() as unknown as import("@/domain/models").Bill;
       if (!isSuperAdmin(user) && !bill.visibleToUserIds.includes(user.uid)) {
         throw new Error("Forbidden");
       }

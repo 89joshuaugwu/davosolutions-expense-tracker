@@ -1,4 +1,5 @@
 import "server-only";
+import { createHash } from "crypto";
 
 import { getAdminDb } from "../../lib/firebase/admin";
 import { getSessionUser, AuthorizationError } from "../../lib/auth/session";
@@ -82,8 +83,7 @@ export class RevenueService {
    */
   private canonicalRevenueHash(input: CreateRevenueDto): string {
     const raw = `${input.sourceId}|${input.date}|${input.amount}|${input.currency}|${input.description}`;
-    const crypto = require("crypto");
-    return crypto.createHash("sha256").update(raw).digest("hex");
+    return createHash("sha256").update(raw).digest("hex");
   }
 
   async createRevenue(

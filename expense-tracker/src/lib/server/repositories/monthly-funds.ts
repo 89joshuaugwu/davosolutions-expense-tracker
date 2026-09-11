@@ -54,7 +54,7 @@ export function createMonthlyFundInTransaction(
     actor: { uid: data.createdBy, role: userRole },
     target: { collection: "monthlyFunds", id: fundId },
     reason: `Allocated monthly fund for ${data.month}`,
-    after: data as any,
+    after: data as unknown as Record<string, unknown>,
   };
   appendAuditInTransaction(t, auditEvent);
   setIdempotencyReceiptInTransaction(t, `${data.createdBy}_createFund_${idempotencyKey}`, "dummy-hash", fundId);

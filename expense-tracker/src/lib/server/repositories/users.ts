@@ -1,6 +1,6 @@
 import "server-only";
 
-import { FieldValue, type Transaction } from "firebase-admin/firestore";
+import { FieldValue } from "firebase-admin/firestore";
 import { getAdminDb, getAdminAuth } from "../../firebase/admin";
 import {
   userProfileSchema,
@@ -8,7 +8,6 @@ import {
   type Role,
   type UserStatus,
   type OperationalPermissions,
-  defaultSecretaryPermissions,
 } from "../../auth/model";
 import type { AuditEvent } from "../audit-model";
 import { appendAuditInTransaction } from "../audit";
@@ -73,8 +72,9 @@ export async function createUser(input: {
       password: input.password,
       displayName: input.name,
     });
-  } catch (error: any) {
-    if (error.code === "auth/email-already-exists") {
+  } catch (err: unknown) {
+    const code = (err as { code?: string }).code;
+    if (code === "auth/email-already-exists") {
       throw new Error("A user with this email already exists.");
     }
     throw new Error("Failed to create user account.");
@@ -114,7 +114,7 @@ export async function createUser(input: {
     });
   } catch (error) {
     // Compensate: remove the Auth user if Firestore write failed
-    try { await auth.deleteUser(uid); } catch { /* best-effort cleanup */ }
+    try { await auth.deleteUser(uid);  } catch (_cleanupErr) { /* best-effort cleanup */ }
     throw new Error("Failed to complete user creation. Auth user was cleaned up.");
   }
 
@@ -164,7 +164,7 @@ export async function updateUser(
       newPermissions = { viewSalaries: true, viewTransport: true, viewBills: true, viewOperationalTotals: true };
     }
 
-    const updateData: Record<string, any> = {
+    const updateData: Record<string, unknown> = {
       updatedAt: FieldValue.serverTimestamp(),
     };
     if (updates.name !== undefined) updateData.name = updates.name;

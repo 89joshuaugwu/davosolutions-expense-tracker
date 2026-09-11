@@ -59,7 +59,7 @@ export function createTransportInTransaction(
   data: Omit<TransportLog, "id" | "createdAt" | "updatedAt" | "revision">,
   userRole: "super_admin" | "secretary",
   idempotencyKey: string,
-  receiptReturnPayload: unknown
+  _receiptReturnPayload: unknown
 ): string {
   const db = getAdminDb();
   const transportRef = db.collection("transportLogs").doc();

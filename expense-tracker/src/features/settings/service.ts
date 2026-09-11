@@ -3,7 +3,6 @@ import "server-only";
 import { getSessionUser, AuthorizationError } from "@/lib/auth/session";
 import { isSuperAdmin } from "@/lib/auth/permissions";
 import { 
-  getCompanySettings, 
   getOrCreateDefaultSettings, 
   updateCompanySettings 
 } from "@/lib/server/repositories/settings";
@@ -13,8 +12,9 @@ import {
   addExchangeRate 
 } from "@/lib/server/repositories/exchange-rates";
 import type { CompanySettings, ExchangeRate } from "@/domain/models";
+import type { DateOnly } from "@/domain/dates";
 import type { UpdateSettingsDto, CreateExchangeRateDto } from "./schema";
-import { DEFAULT_CURRENCY, type CurrencyCode } from "@/domain/money";
+import type { CurrencyCode } from "@/domain/money";
 
 async function verifySuperAdmin() {
   const user = await getSessionUser();
@@ -82,7 +82,7 @@ export class SettingsService {
       dto.fromCurrency,
       dto.toCurrency,
       dto.rate,
-      dto.effectiveFrom as any,
+      dto.effectiveFrom as DateOnly,
       user.uid
     );
   }

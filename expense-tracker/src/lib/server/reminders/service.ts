@@ -146,7 +146,7 @@ export async function processReminders(): Promise<ReminderSummary> {
         });
 
         // Persist attempt
-        const attemptData: Record<string, any> = {
+        const attemptData: Record<string, unknown> = {
           billId,
           billName: bill.name ?? "",
           nextDueDate,

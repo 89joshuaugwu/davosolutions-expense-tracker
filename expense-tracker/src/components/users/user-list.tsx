@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
-import { AlertCircle, Check, ChevronRight, Eye, EyeOff, Loader2, Plus, ShieldCheck, UserPlus, Users, X } from "lucide-react";
+import { AlertCircle, Check, Eye, EyeOff, Loader2, UserPlus, Users, X } from "lucide-react";
 import type { Role, UserStatus, OperationalPermissions } from "@/domain/models";
 
 interface UserItem {
@@ -32,14 +32,15 @@ export function UserList() {
     setError("");
     try {
       const res = await fetch("/api/users");
-      const data = await res.json();
+      const data = await res.json() as { users?: UserItem[]; error?: string };
       if (!res.ok) { setError(data.error || "Failed to load users."); return; }
-      setUsers(data.users);
+      setUsers(data.users ?? []);
     } catch { setError("Network error."); }
     finally { setLoading(false); }
   }, []);
 
-  useEffect(() => { fetchUsers(); }, [fetchUsers]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  useEffect(() => { void fetchUsers(); }, []);
 
   return (
     <div className="user-list">

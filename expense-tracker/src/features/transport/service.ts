@@ -147,7 +147,7 @@ export class TransportService {
       const snap = await t.get(logRef);
       if (!snap.exists) throw new Error("Not found");
 
-      const existing = snap.data() as any;
+      const existing = snap.data() as unknown as import("@/domain/models").TransportLog;
       if (existing.revision !== data.expectedRevision) {
         throw new Error("Conflict: record has been updated by someone else.");
       }

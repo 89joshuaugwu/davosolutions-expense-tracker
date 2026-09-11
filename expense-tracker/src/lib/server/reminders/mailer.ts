@@ -95,7 +95,7 @@ export async function sendReminderEmail(params: ReminderEmailParams): Promise<{ 
       html,
     });
     return { messageId: result.messageId ?? null, error: null };
-  } catch (error: any) {
-    return { messageId: null, error: error.message ?? "Unknown SMTP error" };
+  } catch (err: unknown) {
+    return { messageId: null, error: (err as Error).message ?? "Unknown SMTP error" };
   }
 }

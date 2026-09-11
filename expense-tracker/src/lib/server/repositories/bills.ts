@@ -99,7 +99,7 @@ export function createBillInTransaction(
     actor: { uid: data.createdBy, role: userRole },
     target: { collection: "bills", id: billId },
     reason: "New bill created",
-    after: data as any,
+    after: data as unknown as Record<string, unknown>,
   };
   appendAuditInTransaction(t, auditEvent);
   setIdempotencyReceiptInTransaction(t, `${data.createdBy}_createBill_${idempotencyKey}`, "dummy-hash", billId);
@@ -152,7 +152,7 @@ export async function getBills({
   });
 
   return bills.map(b => {
-    const { visibleToUserIds, ...rest } = b;
+    const { visibleToUserIds: _visibleToUserIds, ...rest } = b;
     return rest as BillListItem;
   });
 }
@@ -191,8 +191,8 @@ export function updateBillInTransaction(
     actor: { uid: actorId, role: actorRole },
     target: { collection: "bills", id: billId },
     reason,
-    before: existingBill as any,
-    after: { ...existingBill, ...update, revision: newRevision } as any,
+    before: existingBill as unknown as Record<string, unknown>,
+    after: { ...existingBill, ...update, revision: newRevision } as unknown as Record<string, unknown>,
   };
   appendAuditInTransaction(t, auditEvent);
 }
@@ -262,7 +262,7 @@ export function createBillPaymentInTransaction(
     actor: { uid: data.createdBy, role: userRole },
     target: { collection: "bills", id: data.billId },
     reason: `Paid occurrence ${data.occurrenceDate}`,
-    after: paymentRecord as any,
+    after: paymentRecord as unknown as Record<string, unknown>,
   };
   appendAuditInTransaction(t, auditEvent);
 

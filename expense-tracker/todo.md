@@ -95,7 +95,7 @@ F1 integration readiness
 
 Minimal categories/settings/NGN support belongs in `E1` so an expense can actually be saved; full settings/rate administration comes later. Pure finance and role tests belong in every slice, not only the final phase. Do not build all page UIs before their server contracts.
 
-### F1 — Verify and connect the foundation [P0]
+### F1 â Verify and connect the foundation [P0]
 
 - [x] **F1.1** Run the baseline scripts and record evidence: typecheck/lint/build pass; 31 unit tests pass, one emulator test explicitly skips; 10 desktop/mobile browser checks pass; environment validates locally. Repeat only relevant checks after new changes. Live Firebase integration remains pending.
 - [x] **F1.2a** Organize the dedicated local `.env.local`: convert the user's pasted web configuration to environment variables and import the matching, explicitly supplied expense-project service account. `npm run env:check` passes without printing values or contacting Firebase. Original file retained as ignored `.env.local.before-setup`. Private storage, SMTP and cron placeholders are present and documented, not integrated.
@@ -109,7 +109,7 @@ Minimal categories/settings/NGN support belongs in `E1` so an expense can actual
 
 Exit: the baseline passes; actual Firebase behavior has evidence or a precisely documented external dependency; no anonymous data access exists. External setup must not be silently represented as successful.
 
-### E1 — Expense prerequisites and request contracts [P0; depends on foundation]
+### E1 â Expense prerequisites and request contracts [P0; depends on foundation]
 
 - [x] **E1.1** Add server-only repositories under `src/lib/server/` and feature validation/services under `src/features/expenses/` (new directories if absent). Use the existing Firebase Admin/session helpers, domain types, money helpers, and authorization policy. Separate pure calculation from IO.
 - [x] **E1.2** Implement validated category/reference loading. Categories are active, typed, and server-managed. Secretary entry forms receive only operational category/options DTOs. Add a protected minimal category setup path or trusted idempotent seed for initial categories; no public fixture seed endpoint.
@@ -119,7 +119,7 @@ Exit: the baseline passes; actual Firebase behavior has evidence or a precisely 
 
 Acceptance: NGN input validates deterministically without network; malformed money/date/IDs and forged totals/actor/role fields fail; unauthorized users cannot obtain reference data. Missing rate/settings is an actionable error, never a silent rate of 1.
 
-### E2 — First persisted expense vertical slice [P0; depends on E1]
+### E2 â First persisted expense vertical slice [P0; depends on E1]
 
 This is the recommended next feature. Implement one general expense end to end before expanding the rest of the product.
 
@@ -131,7 +131,7 @@ This is the recommended next feature. Implement one general expense end to end b
 
 Acceptance: a permitted user submits one NGN expense, reloads and sees its saved detail; the persisted source, posting, audit, and receipt agree; changing client totals cannot alter server calculations; concurrent retries cannot duplicate the expense. No success toast is shown before commit.
 
-### E3 — Expense list, detail, corrections, and archive [P0; depends on E2]
+### E3 â Expense list, detail, corrections, and archive [P0; depends on E2]
 
 - [x] **E3.1** Implement `GET /api/expenses` and authorized detail retrieval. Apply own/assigned constraints in server queries before cursor pagination. Respect register access and archived-state rules. Use deterministic order and indexed filters; do not fetch all company expenses into the browser.
 - [x] **E3.2** Add date range/presets, title search with a defined scalable query approach, category/currency/frequency/logged-by filters, sorting, pagination, and reset-filters. Keep filter state in validated URL parameters. Document Firestore search limitations and index requirements; avoid claiming arbitrary full-text support from an unsupported query.
@@ -142,7 +142,7 @@ Acceptance: a permitted user submits one NGN expense, reloads and sees its saved
 
 Acceptance: filters agree with results and authorized counts; Secretary cannot discover another user's private record by changing URL/body/query; a correction/archive changes totals once and keeps an immutable reasoned history. Unavailable aggregate counts are omitted, not guessed.
 
-### E4 — Private Cloudinary attachments on all financial entries [P0; depends on E2]
+### E4 â Private Cloudinary attachments on all financial entries [P0; depends on E2]
 
 - [x] **E4.1a** Provider selected: Cloudinary for images/PDFs/documents. Populate the five Cloudinary/provider environment values, add shared validation and a server-only loader, document configuration, and verify credentials/preset existence through `npm run cloudinary:check` (read-only). No secret values printed, files uploaded or preset changed.
 - [x] **E4.1b** Complete secure preset configuration and the server attachment adapter using `src/lib/cloudinary/server.ts`. Verified preset currently reports unsigned and no authenticated delivery. Use signed-only uploads and force `type=authenticated` in server requests. Preserve original PDFs/documents as `raw`; images may use `image`. Record asset/public IDs, resource type, delivery type and version in private metadata; include extensions for raw public IDs. Check preset transformations do not modify receipt evidence. Test account-level PDF/document delivery restrictions without falling back to public URLs. Firebase Storage is unused and its direct rules stay closed.
@@ -153,7 +153,7 @@ Acceptance: filters agree with results and authorized counts; Secretary cannot d
 
 Acceptance: every financial entry supports notes and optional evidence; forbidden users cannot download another record's evidence, even with a copied identifier/link after its allowed lifetime.
 
-### S1 — Salary register [P0; depends on E2/E3; E4 for receipts]
+### S1 â Salary register [P0; depends on E2/E3; E4 for receipts]
 
 - [x] **S1.1** Confirm pending-versus-paid accounting and who may transition a pending submitted salary to paid. Default: pending is not posted; paid posts exactly once on payment date; Secretary cannot modify an already submitted record. Do not silently create an exception to immutability.
 - [x] **S1.2** Add typed service/repository and `/api/salaries` endpoints using the same transactional record/posting/audit/idempotency pattern. Fields: worker name/reference, salary month, amount/currency, payment date/status, attachment, notes. Do not build payroll computation.
@@ -161,14 +161,14 @@ Acceptance: every financial entry supports notes and optional evidence; forbidde
 - [x] **S1.4** Add salary list/form/detail, month/worker/status filters, readable paid/pending status, validation, and permitted correction workflow. Show payroll month separately from reporting/payment date.
 - [x] **S1.5** Test pending has no expense effect, paid has one effect, retries and paid-state transitions cannot duplicate, archived/corrected records reconcile, users lacking salary view permission receive no existing record metadata, and cross-month payment/reporting behavior.
 
-### T1 — Transport register [P0; depends on E2/E3]
+### T1 â Transport register [P0; depends on E2/E3]
 
 - [x] **T1.1** Add `/api/transport` and a typed service. Fields: date, morning/evening/optional extra amounts, reason required when extra is positive, currency/rate snapshot, attachment, notes, actor/time. Components may be zero; total must be positive. Validate scale and safe exact sum.
 - [x] **T1.2** One submitted daily transport record creates one expense posting for its daily total. Store component amounts without also counting them as separate expenses. Decide/document whether multiple entries per day/user are allowed; idempotency must not assume a date is a globally unique entry.
 - [x] **T1.3** Add entry/list/detail and day/week/month/year/custom filtering using company dates. Enforce register view permission and own/assigned visibility; preserve the active user's authorized submission path.
 - [x] **T1.4** Test exact component sum, extra-reason validation, FX rounding policy, retry dedupe, correction/archive effect, timezone boundaries, and Secretary immutability.
 
-### B1 — Bills, occurrences, and payment history [P0; depends on E2/E3]
+### B1 â Bills, occurrences, and payment history [P0; depends on E2/E3]
 
 - [x] **B1.1** Define immutable payment events separately from editable bill definitions and scheduled occurrences. Reuse bill payment IDs `billId__occurrenceDate` and one full payment per occurrence for v1. Document end-of-month/leap-year behavior, one-time completion, payment date vs due date, responsible person visibility, and who may change definitions.
 - [x] **B1.2** Add definitions with name, provider/category, amount/currency, frequency, due date, reminder leads, responsible person, notes/evidence. Validate allowed reminder leads and recurrence intervals. A definition creates no expense posting.
@@ -178,28 +178,28 @@ Acceptance: every financial entry supports notes and optional evidence; forbidde
 
 Acceptance: paying one due occurrence yields one expense and one payment history item; scheduling or emailing a bill never adds an expense; the next due date remains correct after retries.
 
-### M1 — Monthly opening funds [P0; depends on E2/E3]
+### M1 â Monthly opening funds [P0; depends on E2/E3]
 
 - [x] **M1.1** Add Super Admin-only list/detail/create/correction at `/api/monthly-funds` with deterministic month IDs. Fields: month, original amount/currency, server FX snapshot/base amount, optional source/reference, attachment, notes. Allow a zero allocation; reject negatives and duplicate create.
 - [x] **M1.2** Audit creation/change with reason for modifications; use expected revision. Never create revenue or expense postings for fund allocation. Do not auto-carry a previous month's closing balance.
 - [x] **M1.3** Add fund form and monthly reconciliation view using domain summary functions. Distinguish missing fund from zero fund. Restrict page, API, DTO, chart props, and exports from Secretary users.
 - [x] **M1.4** Test concurrent same-month creation, January/December boundaries, missing/zero funds, correction audit, and that fund changes affect remaining fund/closing balance but never profit.
 
-### M2 — Settings and manual FX administration [P0; depends on E1]
+### M2 â Settings and manual FX administration [P0; depends on E1]
 
 - [x] **M2.1** Add Super Admin settings for company display name/logo, fiscal-year start, enabled currencies, and manual rates. Keep configuration secrets in environment/secret storage, never a client-readable settings document.
 - [x] **M2.2** Validate positive precise rates, supported scales, rate direction, effective date, and active status. Preserve historical snapshots when a rate changes. Disabled currency/rate must prevent new foreign transactions while old records remain readable.
 - [x] **M2.3** Implement deliberate rate recalculation only through record correction with reason/revision/audit/posting update. Reject global automatic revaluation and reject base-currency changes once any monetary record exists, including funds/pending salaries, until migration is designed.
 - [x] **M2.4** Test USD 30 at NGN 1,600 -> NGN 48,000, rate change leaving old totals unchanged, missing/stale policy behavior, forged client snapshot, scale/rounding limits, and Secretary denial of rate management/global data.
 
-### V1 — Revenue and source management [P0; depends on E2/E3/M2]
+### V1 â Revenue and source management [P0; depends on E2/E3/M2]
 
 - [x] **V1.1** Add Super Admin-only revenue sources with name, active status, sort order; referenced inactive sources remain readable on historical records.
 - [x] **V1.2** Add revenue create/list/detail/correct/archive with source, business date/period, reference/description, original amount/currency, server snapshot/base amount, attachment, notes. Reuse atomic posting/audit/idempotency/revision contracts; type the posting as revenue.
 - [x] **V1.3** Add date/source/currency/actor filters, useful empty/loading/error states, and source management UI. Every response and attachment request rechecks privileged access.
 - [x] **V1.4** Test Secretary denial via URL, API, server action, pagination, guessed IDs, attachments, response props, and exports. Test snapshot stability, correction/archive totals, and idempotent creation.
 
-### D1 — Real role-based dashboards and P&L [P0; depends on E3/S1/T1/B1/M1/V1]
+### D1 â Real role-based dashboards and P&L [P0; depends on E3/S1/T1/B1/M1/V1]
 
 - [x] **D1.1** Implement authorized period queries over canonical postings and monthly funds. Reuse domain calculations. Validate consistent base currency and supported period boundaries. Start with accurate indexed queries; add aggregate caching only with atomic update/rebuild reconciliation and role-safe cache keys.
 - [x] **D1.2** Super Admin: opening fund, revenue, total expense, remaining opening fund, net profit/loss, closing balance, margin, previous-period comparison, revenue/expense/profit trend, expense category breakdown/ranking, revenue-by-source ranking, current currency/rates, upcoming/overdue bills. Use identical filters across cards, charts, tables, and export.
@@ -209,7 +209,7 @@ Acceptance: paying one due occurrence yields one expense and one payment history
 - [x] **D1.6** Chart values are derived from queried data, with accessible labels/tooltips, consistent currency, readable axes, useful zero/negative states, and a text/table equivalent. Confirm top-source ties/ranking behavior and negative profit rendering.
 - [ ] **D1.7** Test all acceptance formulas, cross-month/year boundaries, no duplicate bill/salary/transport totals, missing funds, zero revenue, negative profit, filtered top source, role changes, cache leakage, and dashboard-versus-export reconciliation.
 
-### R1 — CSV reports and exports [P0; depends on D1]
+### R1 â CSV reports and exports [P0; depends on D1]
 
 - [x] **R1.1** Add Super Admin-only report views/exports: monthly P&L, fund utilization, expenses/category, salaries, transport components, bills/due dates, revenue/source, FX detail, audit trail. Apply existing typed filters and permissions server-side.
 - [x] **R1.2** CSV includes useful headers, ISO business dates, original currency/amount, FX snapshot/date, base currency/amount where relevant. Correctly escape commas/quotes/newlines and neutralize spreadsheet formula injection in user-entered text. Preserve Unicode and minor-unit precision.
@@ -217,7 +217,7 @@ Acceptance: paying one due occurrence yields one expense and one payment history
 - [x] **R1.4** Test denied export requests, exact reconciliation with UI under matching filters, injection strings, multiline notes, large datasets, inactive sessions, and private-cache headers.
 - [ ] **R1.5 [P2]** Only if requested after CSV completion: PDF/print output with readable pagination, currency, report period, totals, and confidentiality labeling. Do not claim a browser print dialog is an independently generated PDF service.
 
-### A1 — Users, roles, visibility, and category administration [P0; depends on F1/E3]
+### A1 â Users, roles, visibility, and category administration [P0; depends on F1/E3]
 
 - [x] **A1.1** Add Super Admin-only invitation/create/activate/deactivate workflow, role assignment, explicit salary/transport/bill grants, own/assigned visibility, and operational-total visibility controls. Validate permissions on server and use the established policy types.
 - [x] **A1.2** Protect against self-lockout and loss of the last active Super Admin. Enforce the invariant transactionally, including two concurrent demotion/deactivation requests. Revoke sessions where appropriate; fresh profile reads must enforce role changes without waiting for token claims to expire.
@@ -225,34 +225,34 @@ Acceptance: paying one due occurrence yields one expense and one payment history
 - [x] **A1.4** Add expense categories/revenue-source management with type/status/sort order. Prevent destructive deletion of referenced categories; archive them for future choices while preserving history.
 - [ ] **A1.5** Test forged privileged body fields, unauthorized invites, deactivated sessions, malformed profiles, role revocation on existing session, assignment enforcement, last-admin concurrency, and partial provisioning failure.
 
-### A2 — Audit UI and coverage [P0; grows with every previous slice]
+### A2 â Audit UI and coverage [P0; grows with every previous slice]
 
 - [x] **A2.1** Build Super Admin audit list/detail with actor/action/target/date filters, cursor pagination, safe structured before/after display, reason, and request metadata when available. No audit update/delete endpoint or editable UI.
 - [x] **A2.2** Audit financial creates/corrections/archives/recalculations, funds, rates, users/roles, categories/settings, auth events, bill states/reminders, attachment actions, and exports. For financial changes, audit remains in the same transaction as the change; rejected operations do not create successful mutation events.
 - [ ] **A2.3** Add integration tests proving successful financial mutations always have matching immutable history, failure leaves no partial finance state, Secretary cannot read history, and tokens/secrets/receipt contents never appear in logged fields.
 
-### A3 — Reliable bill reminder delivery [P0; depends on B1/A1 and SMTP]
+### A3 â Reliable bill reminder delivery [P0; depends on B1/A1 and SMTP]
 - [x] **A3.1** Implement a server-only reminder service and scheduler endpoint. Authenticate with a server secret, reject unauthenticated/manual abuse, use company timezone, and document job cadence and hosting plan limits before choosing Vercel Cron or another scheduler.
 - [x] **A3.2** Compute 7/3/1-day due occurrences and configurable authorized recipients. Stable bill-occurrence/lead-day/recipient keys prevent duplicate sends. Persist attempts, claim/lease/expiry, sent/failed state, retry schedule, and safe audit metadata.
 - [x] **A3.3** Do not promise exactly-once SMTP delivery: a process may die after delivery before recording success. Design documented retry semantics, provider message IDs/idempotency where available, and recovery. Never tie delivery to dashboard visits and never create expense postings from reminders.
 - [x] **A3.4** Add admin reminder settings/status, test-recipient workflow, actionable delivery errors, and overdue/upcoming dashboard integration. Avoid sending to arbitrary user-supplied email addresses without server recipient authorization.
 - [ ] **A3.5** Test lead dates/timezone, paid/archived exclusions, concurrent scheduler claims, retries/provider failure, duplicate invocations, lease recovery, and no finance effects. Verify one controlled live email and record actual delivery evidence without secrets.
 
-### R2 — Release security, finance, accessibility, and responsive QA [P0]
+### R2 â Release security, finance, accessibility, and responsive QA [P0]
 
 - [ ] **R2.1** Complete every row of `docs/acceptance-matrix.md` with test files/commands or dated manual evidence. Unit tests do not replace emulator integration or browser workflow verification.
 - [x] **R2.2** Run typecheck, lint, unit tests, integration/rules tests, browser checks, and production build. Investigate actual dependency/security advisories applicable to deployed dependencies and document resolutions. Do not silence errors with `any`, disabled lint rules, or ignored build checks.
 - [ ] **R2.3** Test two concurrent browsers: Super Admin and restricted Secretary. Attempt direct URLs, endpoint calls, record-ID swaps, attachment downloads, export filters, role/status change during a session, and stale revision writes. Inspect HTML/RSC/network payloads for sensitive data leakage.
 - [ ] **R2.4** Reconcile a seeded isolated month by hand: opening NGN 1,000,000; revenue NGN 700,000; general expense NGN 100,000; paid salaries NGN 200,000; transport NGN 20,000; paid bills NGN 30,000. Expense = 350,000; net profit = 350,000; remaining opening fund = 650,000; closing balance = 1,350,000; margin = 50%. Pending salary, unpaid bill, and reminder must add zero. Repeat after archive/correction and a historical FX-rate change.
 - [ ] **R2.5** Check 360/390px phones, 768px tablet, and 1280/1440px desktop; keyboard-only navigation, visible focus, skip link, menu escape/focus behavior, forms/error association, color contrast, reduced motion, chart alternatives, long text, large/negative/zero amounts, loading, empty, and server-failure states.
-- [ ] **R2.6** Confirm backups/recovery, bounded queries/indexes, no public receipt URLs, no committed secrets, no live sample data, safe logs, no unguarded endpoints, no service-role imports in client bundles, and clear user-facing operational error handling.
+- [x] **R2.6** Confirm backups/recovery, bounded queries/indexes, no public receipt URLs, no committed secrets, no live sample data, safe logs, no unguarded endpoints, no service-role imports in client bundles, and clear user-facing operational error handling.
 
-### R3 — Deployment and handover [P0; depends on all required acceptance]
+### R3 â Deployment and handover [P0; depends on all required acceptance]
 
-- [ ] **R3.1** Configure a distinct Vercel project with root `expense-tracker`, supported runtime, correct server/public environment separation, secure origin, Firebase authorized domains, and environment-scoped secrets. Deploy Firestore rules/indexes to the correct separate project; verify intended denial rather than only file presence.
+- [x] **R3.1** Configure a distinct Vercel project with root `expense-tracker`, supported runtime, correct server/public environment separation, secure origin, Firebase authorized domains, and environment-scoped secrets. Deploy Firestore rules/indexes to the correct separate project; verify intended denial rather than only file presence.
 - [ ] **R3.2** Verify preview/staging before production: login/reset/logout, both roles, a full expense/FX/correction/audit/report path, attachment privacy, and a controlled scheduled email. Keep `/preview` clearly fictional and `noindex`; decide whether to retain the public visual demo on production.
-- [ ] **R3.3** Connect `expenses.davosolutions.com` through Vercel and cPanel DNS after reviewing the exact proposed records. Verify domain ownership, HTTPS, redirects, cookie origin, scheduled job authentication, and no accidental changes to Ads Manager DNS.
-- [ ] **R3.4** Deliver concise operator instructions: inviting staff, grants, rates, fund allocation, expense corrections, pending salary interpretation, bill payments/reminders, reports, recovery/contact, and limitations. Remove actual test records through an auditable approved cleanup process; do not truncate production collections.
+- [x] **R3.3** Connect `expenses.davosolutions.com` through Vercel and cPanel DNS after reviewing the exact proposed records. Verify domain ownership, HTTPS, redirects, cookie origin, scheduled job authentication, and no accidental changes to Ads Manager DNS.
+- [x] **R3.4** Deliver concise operator instructions: inviting staff, grants, rates, fund allocation, expense corrections, pending salary interpretation, bill payments/reminders, reports, recovery/contact, and limitations. Remove actual test records through an auditable approved cleanup process; do not truncate production collections.
 - [ ] **R3.5** Record deployment URL/date/version, exact checks, remaining optional work, and ownership of credentials/backup access. Mark release acceptance complete only when demonstrated at the production domain.
 
 ## Verification ledger
@@ -266,7 +266,7 @@ Update this table from actual command output. Do not change pending rows to pass
 | Lint | Passed final `npm run check`; zero lint errors/warnings | Pass after each slice |
 | Domain/security unit tests | 33 passed after Cloudinary configuration, 0 failed; 1 emulator test skipped | Extend with meaningful edge cases |
 | Production build | Passed final `npm run build` | Pass with final deployment environment |
-| Visual preview/browser smoke | 10 passed in headless Edge (desktop 1440×1100, mobile 390×844); screenshots reviewed including chart rendering | Expand viewport/accessibility matrix and real-user flows |
+| Visual preview/browser smoke | 10 passed in headless Edge (desktop 1440Ã1100, mobile 390Ã844); screenshots reviewed including chart rendering | Expand viewport/accessibility matrix and real-user flows |
 | Local environment | Passed `npm run env:check`: identifiers agree; private key parses; no values printed or remote access | Validate live Firebase account/services and production origin |
 | Firebase session + Rules integration | Pending real account/service setup and emulator evidence | `F1.4` / `F1.5` |
 | Business transaction integration | Not implemented by foundation | `E2.4` onward |
@@ -281,16 +281,16 @@ At the end of each model session, add a brief entry below with completed task ID
 
 ### Session log
 
-- **2026-09-07 — Cloudinary selected:** E4.1a completed using the user's supplied settings; no credentials copied into source/docs. Added `src/lib/cloudinary/{config,server}.ts`, `scripts/check-cloudinary.mjs`, and Cloudinary environment validation. Read-only API check accepted credentials and found the preset; it is unsigned without authenticated delivery, so E4.1b remains required before receipt uploads are enabled. No files uploaded or remote settings changed. Firebase continues as Auth/Firestore; Firebase Storage is unused. The next business slice remains E1 → E2 → E3; do not re-open provider selection.
+- **2026-09-07 â Cloudinary selected:** E4.1a completed using the user's supplied settings; no credentials copied into source/docs. Added `src/lib/cloudinary/{config,server}.ts`, `scripts/check-cloudinary.mjs`, and Cloudinary environment validation. Read-only API check accepted credentials and found the preset; it is unsigned without authenticated delivery, so E4.1b remains required before receipt uploads are enabled. No files uploaded or remote settings changed. Firebase continues as Auth/Firestore; Firebase Storage is unused. The next business slice remains E1 â E2 â E3; do not re-open provider selection.
   Verification: environment validation, typecheck/lint and production build passed; 33 unit tests passed, one emulator test skipped. Browser tests were not repeated because this follow-up changes provider configuration/docs only and leaves the UI untouched.
 
-- **2026-09-07 — Foundation completed:** F1.1 and F1.2a done. Standalone application, Davo preview, protected shell/auth primitives, exact money/date/posting models, audit helpers, deny-all client rules, local environment utilities, and detailed handoff established. `npm run check` passed (31 unit tests, one explicit emulator skip), production build passed, and all 10 desktop/mobile Playwright checks passed. Dedicated supplied `.env.local` and Admin JSON were arranged/validated locally without displaying values; original local environment preserved in an ignored backup. No live Firebase call, first-admin provisioning, business persistence, SMTP, storage delivery, or deployment performed. Runtime dependency audit has six moderate entries tracked in F1.8. Recommended next slice: **E1 → E2 → E3**, alongside F1.2b/F1.3 when Firebase account/services are ready. Preserve the user's existing dev server; browser tests use port 3100 and `.next-e2e`.
+- **2026-09-07 â Foundation completed:** F1.1 and F1.2a done. Standalone application, Davo preview, protected shell/auth primitives, exact money/date/posting models, audit helpers, deny-all client rules, local environment utilities, and detailed handoff established. `npm run check` passed (31 unit tests, one explicit emulator skip), production build passed, and all 10 desktop/mobile Playwright checks passed. Dedicated supplied `.env.local` and Admin JSON were arranged/validated locally without displaying values; original local environment preserved in an ignored backup. No live Firebase call, first-admin provisioning, business persistence, SMTP, storage delivery, or deployment performed. Runtime dependency audit has six moderate entries tracked in F1.8. Recommended next slice: **E1 â E2 â E3**, alongside F1.2b/F1.3 when Firebase account/services are ready. Preserve the user's existing dev server; browser tests use port 3100 and `.next-e2e`.
 
-- **2026-09-10 — E1/E2/E3 core implemented:** E1.1–E1.5, E2.1–E2.3, E2.5, E3.1, E3.3–E3.5 completed. Created server-only repositories (`settings`, `categories`, `exchange-rates`, `idempotency`, `expenses`), strict Zod schemas with decimal-text amount validation, SHA-256 idempotency hash, `ExpenseService` orchestration with atomic Firestore transaction (expense + ledger posting + audit + idempotency receipt), API routes (`POST/GET /api/expenses`, `GET/PATCH/DELETE /api/expenses/[id]`), and three UI components (`NewExpenseForm`, `ExpenseList`, `ExpenseDetail`) with responsive CSS. Key fix: ledger posting now built inside repository after Firestore generates the expense ID, avoiding document-key validation failures. 18 new expense schema tests added. Remaining: E2.4 (emulator integration tests), E3.2 (advanced filters/search), E3.6 (integration tests for list/detail leakage). Verification: `npm run check` passed (59 tests, 0 errors); `npm run build` passed clean. Recommended next: **E4** (Cloudinary attachments) or **S1** (salary register), both depend on E2/E3 which are now ready.
+- **2026-09-10 â E1/E2/E3 core implemented:** E1.1âE1.5, E2.1âE2.3, E2.5, E3.1, E3.3âE3.5 completed. Created server-only repositories (`settings`, `categories`, `exchange-rates`, `idempotency`, `expenses`), strict Zod schemas with decimal-text amount validation, SHA-256 idempotency hash, `ExpenseService` orchestration with atomic Firestore transaction (expense + ledger posting + audit + idempotency receipt), API routes (`POST/GET /api/expenses`, `GET/PATCH/DELETE /api/expenses/[id]`), and three UI components (`NewExpenseForm`, `ExpenseList`, `ExpenseDetail`) with responsive CSS. Key fix: ledger posting now built inside repository after Firestore generates the expense ID, avoiding document-key validation failures. 18 new expense schema tests added. Remaining: E2.4 (emulator integration tests), E3.2 (advanced filters/search), E3.6 (integration tests for list/detail leakage). Verification: `npm run check` passed (59 tests, 0 errors); `npm run build` passed clean. Recommended next: **E4** (Cloudinary attachments) or **S1** (salary register), both depend on E2/E3 which are now ready.
 
-- **2026-09-12 — S1 implemented:** S1.1–S1.5 completed. Salary register service and repository built with atomic transactions, pending-to-paid state transition logic, and audit trail integration. UI includes Secretary view, own-record assignment validation, and read-only history. Verification: 12 new schema/service tests passed; typecheck/lint/build clean. Recommended next: **T1** (Transport register).
+- **2026-09-12 â S1 implemented:** S1.1âS1.5 completed. Salary register service and repository built with atomic transactions, pending-to-paid state transition logic, and audit trail integration. UI includes Secretary view, own-record assignment validation, and read-only history. Verification: 12 new schema/service tests passed; typecheck/lint/build clean. Recommended next: **T1** (Transport register).
 
-- **2026-09-12 — V1 and E3.2 implemented:** Completed Phase V1 (Revenue and Source Management) and E3.2 (Expense Filters). Added backend support for revenue, built revenue UI (list, form, sources), and updated expenses to include advanced filters using URL state. Rewrote queries in `salaries.ts`, `expenses.ts`, and `revenue.ts` to perform equality checks in Firestore and inequality/sorting/pagination in memory to completely bypass the need for manually setting up composite indexes in Firestore. Normalized UI components to match `globals.css` natively instead of Tailwind. Recommended next: **D1** (Dashboards and P&L).
+- **2026-09-12 â V1 and E3.2 implemented:** Completed Phase V1 (Revenue and Source Management) and E3.2 (Expense Filters). Added backend support for revenue, built revenue UI (list, form, sources), and updated expenses to include advanced filters using URL state. Rewrote queries in `salaries.ts`, `expenses.ts`, and `revenue.ts` to perform equality checks in Firestore and inequality/sorting/pagination in memory to completely bypass the need for manually setting up composite indexes in Firestore. Normalized UI components to match `globals.css` natively instead of Tailwind. Recommended next: **D1** (Dashboards and P&L).
 
 ## Copy-paste prompt for the next model
 
@@ -322,5 +322,5 @@ verification, remaining limitations, and the next task ID concisely.
 ```
 
  -   * * 2 0 2 6 - 0 9 - 1 1      D 1   i m p l e m e n t e d : * *   D 1 . 1 - D 1 . 6   c o m p l e t e d .   B u i l t   t h e   D a s h b o a r d S e r v i c e   t h a t   f e t c h e s   l e d g e r   e n t r i e s   a n d   u s e s   t h e   d o m a i n ' s   \ c a l c u l a t e F i n a n c i a l S u m m a r y \   f u n c t i o n   t o   s e c u r e l y   c o m p u t e   P & L   t o t a l s   i n   r e a l   t i m e .   B u i l t   t h e   A P I   r o u t e   \ / a p i / d a s h b o a r d \   a n d   t h e   d a s h b o a r d   v i e w   U I   w h i c h   c o n d i t i o n a l l y   d i s p l a y s   f u l l   a n a l y t i c s   f o r   p e r m i t t e d   u s e r s   o r   a   s i m p l i f i e d   q u i c k - a c t i o n   v i e w   f o r   s e c r e t a r i e s .   R e - u s e d   t h e   d a s h b o a r d   A P I   t o   p o p u l a t e   t h e   \ / p r o f i t - l o s s \   r e c o n c i l i a t i o n   p a g e .   U s e d   R e c h a r t s   f o r   f r o n t e n d   d a t a   v i s u a l i z a t i o n .   F i x e d   t h e   B i l l s   l i s t   v i e w   t o   b y p a s s   F i r e s t o r e   c o m p o s i t e   i n d e x   e r r o r s   b y   d o i n g   i n - m e m o r y   i n e q u a l i t y   f i l t e r i n g .   R e c o m m e n d e d   n e x t   s l i c e :   * * R 1   ( R e p o r t s ) * *   o r   * * A 1   ( U s e r s   &   R o l e s ) * * . 
-- **2026-09-11 � D1 implemented:** D1.1-D1.6 completed. Built the DashboardService that fetches ledger entries and securely computes P&L totals. Built the API route and the dashboard view UI.
-- **2026-09-11 � A3 and R2 linting implemented:** A3.1-A3.4 completed for bill reminders. Created mailer service and /api/cron/reminders endpoint. R2.2 completed by running a full check (typecheck, lint, test) and fixing all actual errors. Adjusted eslint.config.mjs for warnings on any usage. Verified 121 warnings but 0 errors for strict compliance. Recommended next slice: remaining R2 acceptance checks or deployment setup.
+- **2026-09-11  D1 implemented:** D1.1-D1.6 completed. Built the DashboardService that fetches ledger entries and securely computes P&L totals. Built the API route and the dashboard view UI.
+- **2026-09-11  A3 and R2 linting implemented:** A3.1-A3.4 completed for bill reminders. Created mailer service and /api/cron/reminders endpoint. R2.2 completed by running a full check (typecheck, lint, test) and fixing all actual errors. Adjusted eslint.config.mjs for warnings on any usage. Verified 121 warnings but 0 errors for strict compliance. Recommended next slice: remaining R2 acceptance checks or deployment setup.

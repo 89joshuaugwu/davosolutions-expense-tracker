@@ -163,34 +163,34 @@ Acceptance: every financial entry supports notes and optional evidence; forbidde
 
 ### T1 — Transport register [P0; depends on E2/E3]
 
-- [ ] **T1.1** Add `/api/transport` and a typed service. Fields: date, morning/evening/optional extra amounts, reason required when extra is positive, currency/rate snapshot, attachment, notes, actor/time. Components may be zero; total must be positive. Validate scale and safe exact sum.
-- [ ] **T1.2** One submitted daily transport record creates one expense posting for its daily total. Store component amounts without also counting them as separate expenses. Decide/document whether multiple entries per day/user are allowed; idempotency must not assume a date is a globally unique entry.
-- [ ] **T1.3** Add entry/list/detail and day/week/month/year/custom filtering using company dates. Enforce register view permission and own/assigned visibility; preserve the active user's authorized submission path.
-- [ ] **T1.4** Test exact component sum, extra-reason validation, FX rounding policy, retry dedupe, correction/archive effect, timezone boundaries, and Secretary immutability.
+- [x] **T1.1** Add `/api/transport` and a typed service. Fields: date, morning/evening/optional extra amounts, reason required when extra is positive, currency/rate snapshot, attachment, notes, actor/time. Components may be zero; total must be positive. Validate scale and safe exact sum.
+- [x] **T1.2** One submitted daily transport record creates one expense posting for its daily total. Store component amounts without also counting them as separate expenses. Decide/document whether multiple entries per day/user are allowed; idempotency must not assume a date is a globally unique entry.
+- [x] **T1.3** Add entry/list/detail and day/week/month/year/custom filtering using company dates. Enforce register view permission and own/assigned visibility; preserve the active user's authorized submission path.
+- [x] **T1.4** Test exact component sum, extra-reason validation, FX rounding policy, retry dedupe, correction/archive effect, timezone boundaries, and Secretary immutability.
 
 ### B1 — Bills, occurrences, and payment history [P0; depends on E2/E3]
 
-- [ ] **B1.1** Define immutable payment events separately from editable bill definitions and scheduled occurrences. Reuse bill payment IDs `billId__occurrenceDate` and one full payment per occurrence for v1. Document end-of-month/leap-year behavior, one-time completion, payment date vs due date, responsible person visibility, and who may change definitions.
-- [ ] **B1.2** Add definitions with name, provider/category, amount/currency, frequency, due date, reminder leads, responsible person, notes/evidence. Validate allowed reminder leads and recurrence intervals. A definition creates no expense posting.
-- [ ] **B1.3** Add explicit payment command keyed to a bill occurrence. Atomically create payment history, one canonical expense posting, audit, idempotency receipt, and next schedule/occurrence state. Reject a second payment for the same occurrence independently of the request idempotency key.
-- [ ] **B1.4** Add bill list/detail/payment UI with upcoming, due-today, overdue, and paid states computed from company date plus payment history. Support status/date/provider/assignee filters and permitted read-only history.
-- [ ] **B1.5** Test two concurrent requests with different keys paying the same occurrence, retry after timeout, month-end recurrence, overdue logic, future due dates, financial correction/archive, and payment/reminder independence.
+- [x] **B1.1** Define immutable payment events separately from editable bill definitions and scheduled occurrences. Reuse bill payment IDs `billId__occurrenceDate` and one full payment per occurrence for v1. Document end-of-month/leap-year behavior, one-time completion, payment date vs due date, responsible person visibility, and who may change definitions.
+- [x] **B1.2** Add definitions with name, provider/category, amount/currency, frequency, due date, reminder leads, responsible person, notes/evidence. Validate allowed reminder leads and recurrence intervals. A definition creates no expense posting.
+- [x] **B1.3** Add explicit payment command keyed to a bill occurrence. Atomically create payment history, one canonical expense posting, audit, idempotency receipt, and next schedule/occurrence state. Reject a second payment for the same occurrence independently of the request idempotency key.
+- [x] **B1.4** Add bill list/detail/payment UI with upcoming, due-today, overdue, and paid states computed from company date plus payment history. Support status/date/provider/assignee filters and permitted read-only history.
+- [x] **B1.5** Test two concurrent requests with different keys paying the same occurrence, retry after timeout, month-end recurrence, overdue logic, future due dates, financial correction/archive, and payment/reminder independence.
 
 Acceptance: paying one due occurrence yields one expense and one payment history item; scheduling or emailing a bill never adds an expense; the next due date remains correct after retries.
 
 ### M1 — Monthly opening funds [P0; depends on E2/E3]
 
-- [ ] **M1.1** Add Super Admin-only list/detail/create/correction at `/api/monthly-funds` with deterministic month IDs. Fields: month, original amount/currency, server FX snapshot/base amount, optional source/reference, attachment, notes. Allow a zero allocation; reject negatives and duplicate create.
-- [ ] **M1.2** Audit creation/change with reason for modifications; use expected revision. Never create revenue or expense postings for fund allocation. Do not auto-carry a previous month's closing balance.
-- [ ] **M1.3** Add fund form and monthly reconciliation view using domain summary functions. Distinguish missing fund from zero fund. Restrict page, API, DTO, chart props, and exports from Secretary users.
-- [ ] **M1.4** Test concurrent same-month creation, January/December boundaries, missing/zero funds, correction audit, and that fund changes affect remaining fund/closing balance but never profit.
+- [x] **M1.1** Add Super Admin-only list/detail/create/correction at `/api/monthly-funds` with deterministic month IDs. Fields: month, original amount/currency, server FX snapshot/base amount, optional source/reference, attachment, notes. Allow a zero allocation; reject negatives and duplicate create.
+- [x] **M1.2** Audit creation/change with reason for modifications; use expected revision. Never create revenue or expense postings for fund allocation. Do not auto-carry a previous month's closing balance.
+- [x] **M1.3** Add fund form and monthly reconciliation view using domain summary functions. Distinguish missing fund from zero fund. Restrict page, API, DTO, chart props, and exports from Secretary users.
+- [x] **M1.4** Test concurrent same-month creation, January/December boundaries, missing/zero funds, correction audit, and that fund changes affect remaining fund/closing balance but never profit.
 
 ### M2 — Settings and manual FX administration [P0; depends on E1]
 
-- [ ] **M2.1** Add Super Admin settings for company display name/logo, fiscal-year start, enabled currencies, and manual rates. Keep configuration secrets in environment/secret storage, never a client-readable settings document.
-- [ ] **M2.2** Validate positive precise rates, supported scales, rate direction, effective date, and active status. Preserve historical snapshots when a rate changes. Disabled currency/rate must prevent new foreign transactions while old records remain readable.
-- [ ] **M2.3** Implement deliberate rate recalculation only through record correction with reason/revision/audit/posting update. Reject global automatic revaluation and reject base-currency changes once any monetary record exists, including funds/pending salaries, until migration is designed.
-- [ ] **M2.4** Test USD 30 at NGN 1,600 -> NGN 48,000, rate change leaving old totals unchanged, missing/stale policy behavior, forged client snapshot, scale/rounding limits, and Secretary denial of rate management/global data.
+- [x] **M2.1** Add Super Admin settings for company display name/logo, fiscal-year start, enabled currencies, and manual rates. Keep configuration secrets in environment/secret storage, never a client-readable settings document.
+- [x] **M2.2** Validate positive precise rates, supported scales, rate direction, effective date, and active status. Preserve historical snapshots when a rate changes. Disabled currency/rate must prevent new foreign transactions while old records remain readable.
+- [x] **M2.3** Implement deliberate rate recalculation only through record correction with reason/revision/audit/posting update. Reject global automatic revaluation and reject base-currency changes once any monetary record exists, including funds/pending salaries, until migration is designed.
+- [x] **M2.4** Test USD 30 at NGN 1,600 -> NGN 48,000, rate change leaving old totals unchanged, missing/stale policy behavior, forged client snapshot, scale/rounding limits, and Secretary denial of rate management/global data.
 
 ### V1 — Revenue and source management [P0; depends on E2/E3/M2]
 

@@ -115,21 +115,10 @@ export async function getBills({
   userId?: string;
 }) {
   const db = getAdminDb();
-  let q = db.collection("bills").orderBy("nextDueDate", "asc");
-
-  if (status) {
-    q = q.where("status", "==", status);
-  } else {
-    // Only fetch active by default if we want, but here we'll fetch all matching status if none provided.
-    // Wait, let's just allow fetching all if status is omitted.
-  }
+  // Fetch all bills and filter/sort in memory to avoid Firestore composite index errors.
+  const snapshot = await db.collection("bills").get();
   
-  if (userId) {
-    q = q.where("visibleToUserIds", "array-contains", userId);
-  }
-
-  const snapshot = await q.get();
-  return snapshot.docs.map((d) => {
+  let bills = snapshot.docs.map((d) => {
     const full = docToBill(d.id, d.data());
     return {
       id: full.id,
@@ -143,7 +132,28 @@ export async function getBills({
       categoryId: full.categoryId,
       createdBy: full.createdBy,
       createdAt: full.createdAt,
-    } as BillListItem;
+      visibleToUserIds: full.visibleToUserIds, // include temporarily for filtering
+    };
+  });
+
+  if (status) {
+    bills = bills.filter(b => b.status === status);
+  }
+  
+  if (userId) {
+    bills = bills.filter(b => b.visibleToUserIds.includes(userId));
+  }
+
+  // Sort by nextDueDate ascending
+  bills.sort((a, b) => {
+    if (a.nextDueDate < b.nextDueDate) return -1;
+    if (a.nextDueDate > b.nextDueDate) return 1;
+    return 0;
+  });
+
+  return bills.map(b => {
+    const { visibleToUserIds, ...rest } = b;
+    return rest as BillListItem;
   });
 }
 

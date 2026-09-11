@@ -116,7 +116,7 @@ export function RevenueClient() {
       <div className="page-heading">
         <div>
           <h1>Revenue</h1>
-          <p>Manage and track your company's income.</p>
+          <p>Manage and track your company&apos;s income.</p>
         </div>
         <div className="heading-actions">
           <Link href="/revenue/sources" className="button secondary">

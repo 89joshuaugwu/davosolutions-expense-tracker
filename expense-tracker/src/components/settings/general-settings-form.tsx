@@ -74,7 +74,7 @@ export function GeneralSettingsForm({ initialSettings, onSaved }: Props) {
     <div className="panel form-panel">
       <h2>General Settings</h2>
       <p className="muted" style={{ fontSize: 12, marginBottom: 20 }}>
-        Manage your company's core configuration.
+        Manage your company&apos;s core configuration.
       </p>
 
       {error && <div className="form-error">{error}</div>}

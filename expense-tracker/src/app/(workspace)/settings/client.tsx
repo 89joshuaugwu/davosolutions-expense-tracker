@@ -32,7 +32,7 @@ export function SettingsClient({ initialSettings, initialRates }: Props) {
       <div className="page-heading">
         <div>
           <h1>Company Settings</h1>
-          <p>Manage your organization's financial preferences and active exchange rates.</p>
+          <p>Manage your organization&apos;s financial preferences and active exchange rates.</p>
         </div>
       </div>
 

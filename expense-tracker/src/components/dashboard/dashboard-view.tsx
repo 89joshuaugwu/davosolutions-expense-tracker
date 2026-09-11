@@ -148,7 +148,7 @@ export function DashboardView({ userRole, userName }: { userRole: string, userNa
                           <XAxis type="number" hide />
                           <YAxis dataKey="categoryId" type="category" axisLine={false} tickLine={false} tick={{ fill: 'var(--text-secondary)', fontSize: 12 }} width={100} />
                           <Tooltip 
-                            formatter={(value: number) => formatMoney(value, summary.baseCurrency)}
+                            formatter={(value: any) => formatMoney(value, summary.baseCurrency)}
                             contentStyle={{ borderRadius: '8px', border: '1px solid var(--line)', boxShadow: '0 4px 12px rgba(0,0,0,0.05)' }} 
                           />
                           <Bar dataKey="totalMinor" radius={[0, 4, 4, 0]}>
@@ -176,7 +176,7 @@ export function DashboardView({ userRole, userName }: { userRole: string, userNa
                           <XAxis type="number" hide />
                           <YAxis dataKey="sourceId" type="category" axisLine={false} tickLine={false} tick={{ fill: 'var(--text-secondary)', fontSize: 12 }} width={100} />
                           <Tooltip 
-                            formatter={(value: number) => formatMoney(value, summary.baseCurrency)}
+                            formatter={(value: any) => formatMoney(value, summary.baseCurrency)}
                             contentStyle={{ borderRadius: '8px', border: '1px solid var(--line)', boxShadow: '0 4px 12px rgba(0,0,0,0.05)' }} 
                           />
                           <Bar dataKey="totalMinor" radius={[0, 4, 4, 0]}>

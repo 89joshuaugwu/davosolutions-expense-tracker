@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { getSessionUser } from "@/lib/auth/session";
 import { DashboardService } from "@/features/dashboard/service";
 import { canViewOperationalTotals } from "@/lib/auth/permissions";
-import { currentReportingMonth, reportingMonthOf } from "@/domain/dates";
+import { reportingMonthOf } from "@/domain/dates";
 
 export async function GET(request: Request) {
   const user = await getSessionUser();

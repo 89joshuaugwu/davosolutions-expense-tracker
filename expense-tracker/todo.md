@@ -219,10 +219,10 @@ Acceptance: paying one due occurrence yields one expense and one payment history
 
 ### A1 — Users, roles, visibility, and category administration [P0; depends on F1/E3]
 
-- [ ] **A1.1** Add Super Admin-only invitation/create/activate/deactivate workflow, role assignment, explicit salary/transport/bill grants, own/assigned visibility, and operational-total visibility controls. Validate permissions on server and use the established policy types.
-- [ ] **A1.2** Protect against self-lockout and loss of the last active Super Admin. Enforce the invariant transactionally, including two concurrent demotion/deactivation requests. Revoke sessions where appropriate; fresh profile reads must enforce role changes without waiting for token claims to expire.
-- [ ] **A1.3** Firebase Auth changes and Firestore writes are not one transaction. Track invitation/provisioning operation state, retries, partial failure, compensation/recovery, and audit outcome. Never leave an active role profile for the wrong UID after a failed invite.
-- [ ] **A1.4** Add expense categories/revenue-source management with type/status/sort order. Prevent destructive deletion of referenced categories; archive them for future choices while preserving history.
+- [x] **A1.1** Add Super Admin-only invitation/create/activate/deactivate workflow, role assignment, explicit salary/transport/bill grants, own/assigned visibility, and operational-total visibility controls. Validate permissions on server and use the established policy types.
+- [x] **A1.2** Protect against self-lockout and loss of the last active Super Admin. Enforce the invariant transactionally, including two concurrent demotion/deactivation requests. Revoke sessions where appropriate; fresh profile reads must enforce role changes without waiting for token claims to expire.
+- [x] **A1.3** Firebase Auth changes and Firestore writes are not one transaction. Track invitation/provisioning operation state, retries, partial failure, compensation/recovery, and audit outcome. Never leave an active role profile for the wrong UID after a failed invite.
+- [x] **A1.4** Add expense categories/revenue-source management with type/status/sort order. Prevent destructive deletion of referenced categories; archive them for future choices while preserving history.
 - [ ] **A1.5** Test forged privileged body fields, unauthorized invites, deactivated sessions, malformed profiles, role revocation on existing session, assignment enforcement, last-admin concurrency, and partial provisioning failure.
 
 ### A2 — Audit UI and coverage [P0; grows with every previous slice]

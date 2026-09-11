@@ -5,7 +5,6 @@ const nextConfig: NextConfig = {
   distDir: process.env.DAVO_E2E === "1" ? ".next-e2e" : ".next",
   poweredByHeader: false,
   serverExternalPackages: ["firebase-admin"],
-  allowedDevOrigins: ['192.168.1.4'],
   async headers() {
     return [{
       source: "/:path*", headers: [

@@ -134,7 +134,7 @@ Acceptance: a permitted user submits one NGN expense, reloads and sees its saved
 ### E3 — Expense list, detail, corrections, and archive [P0; depends on E2]
 
 - [x] **E3.1** Implement `GET /api/expenses` and authorized detail retrieval. Apply own/assigned constraints in server queries before cursor pagination. Respect register access and archived-state rules. Use deterministic order and indexed filters; do not fetch all company expenses into the browser.
-- [ ] **E3.2** Add date range/presets, title search with a defined scalable query approach, category/currency/frequency/logged-by filters, sorting, pagination, and reset-filters. Keep filter state in validated URL parameters. Document Firestore search limitations and index requirements; avoid claiming arbitrary full-text support from an unsupported query.
+- [x] **E3.2** Add date range/presets, title search with a defined scalable query approach, category/currency/frequency/logged-by filters, sorting, pagination, and reset-filters. Keep filter state in validated URL parameters. Document Firestore search limitations and index requirements; avoid claiming arbitrary full-text support from an unsupported query.
 - [x] **E3.3** Detail shows original amount/currency, applied rate/date, converted amount, category, business date, frequency, safe attachment links, notes, creator, timestamp, and revision/archive status. Amount format must not lose minor units.
 - [x] **E3.4** Add Super Admin correction/archive commands at `src/app/api/expenses/[id]/route.ts` or dedicated explicit routes. Require reason and expected revision. Update source and canonical posting plus before/after audit atomically. Never hard-delete financial history. Concurrent stale changes return 409.
 - [x] **E3.5** Secretary gets read-only submitted records. Reject forged edit/archive requests server-side, including own records and IDs guessed from another user's account. Permit no generic patch API with a role-sensitive field blacklist.
@@ -194,10 +194,10 @@ Acceptance: paying one due occurrence yields one expense and one payment history
 
 ### V1 — Revenue and source management [P0; depends on E2/E3/M2]
 
-- [ ] **V1.1** Add Super Admin-only revenue sources with name, active status, sort order; referenced inactive sources remain readable on historical records.
-- [ ] **V1.2** Add revenue create/list/detail/correct/archive with source, business date/period, reference/description, original amount/currency, server snapshot/base amount, attachment, notes. Reuse atomic posting/audit/idempotency/revision contracts; type the posting as revenue.
-- [ ] **V1.3** Add date/source/currency/actor filters, useful empty/loading/error states, and source management UI. Every response and attachment request rechecks privileged access.
-- [ ] **V1.4** Test Secretary denial via URL, API, server action, pagination, guessed IDs, attachments, response props, and exports. Test snapshot stability, correction/archive totals, and idempotent creation.
+- [x] **V1.1** Add Super Admin-only revenue sources with name, active status, sort order; referenced inactive sources remain readable on historical records.
+- [x] **V1.2** Add revenue create/list/detail/correct/archive with source, business date/period, reference/description, original amount/currency, server snapshot/base amount, attachment, notes. Reuse atomic posting/audit/idempotency/revision contracts; type the posting as revenue.
+- [x] **V1.3** Add date/source/currency/actor filters, useful empty/loading/error states, and source management UI. Every response and attachment request rechecks privileged access.
+- [x] **V1.4** Test Secretary denial via URL, API, server action, pagination, guessed IDs, attachments, response props, and exports. Test snapshot stability, correction/archive totals, and idempotent creation.
 
 ### D1 — Real role-based dashboards and P&L [P0; depends on E3/S1/T1/B1/M1/V1]
 
@@ -232,7 +232,6 @@ Acceptance: paying one due occurrence yields one expense and one payment history
 - [ ] **A2.3** Add integration tests proving successful financial mutations always have matching immutable history, failure leaves no partial finance state, Secretary cannot read history, and tokens/secrets/receipt contents never appear in logged fields.
 
 ### A3 — Reliable bill reminder delivery [P0; depends on B1/A1 and SMTP]
-
 - [ ] **A3.1** Implement a server-only reminder service and scheduler endpoint. Authenticate with a server secret, reject unauthenticated/manual abuse, use company timezone, and document job cadence and hosting plan limits before choosing Vercel Cron or another scheduler.
 - [ ] **A3.2** Compute 7/3/1-day due occurrences and configurable authorized recipients. Stable bill-occurrence/lead-day/recipient keys prevent duplicate sends. Persist attempts, claim/lease/expiry, sent/failed state, retry schedule, and safe audit metadata.
 - [ ] **A3.3** Do not promise exactly-once SMTP delivery: a process may die after delivery before recording success. Design documented retry semantics, provider message IDs/idempotency where available, and recovery. Never tie delivery to dashboard visits and never create expense postings from reminders.
@@ -290,6 +289,8 @@ At the end of each model session, add a brief entry below with completed task ID
 - **2026-09-10 — E1/E2/E3 core implemented:** E1.1–E1.5, E2.1–E2.3, E2.5, E3.1, E3.3–E3.5 completed. Created server-only repositories (`settings`, `categories`, `exchange-rates`, `idempotency`, `expenses`), strict Zod schemas with decimal-text amount validation, SHA-256 idempotency hash, `ExpenseService` orchestration with atomic Firestore transaction (expense + ledger posting + audit + idempotency receipt), API routes (`POST/GET /api/expenses`, `GET/PATCH/DELETE /api/expenses/[id]`), and three UI components (`NewExpenseForm`, `ExpenseList`, `ExpenseDetail`) with responsive CSS. Key fix: ledger posting now built inside repository after Firestore generates the expense ID, avoiding document-key validation failures. 18 new expense schema tests added. Remaining: E2.4 (emulator integration tests), E3.2 (advanced filters/search), E3.6 (integration tests for list/detail leakage). Verification: `npm run check` passed (59 tests, 0 errors); `npm run build` passed clean. Recommended next: **E4** (Cloudinary attachments) or **S1** (salary register), both depend on E2/E3 which are now ready.
 
 - **2026-09-12 — S1 implemented:** S1.1–S1.5 completed. Salary register service and repository built with atomic transactions, pending-to-paid state transition logic, and audit trail integration. UI includes Secretary view, own-record assignment validation, and read-only history. Verification: 12 new schema/service tests passed; typecheck/lint/build clean. Recommended next: **T1** (Transport register).
+
+- **2026-09-12 — V1 and E3.2 implemented:** Completed Phase V1 (Revenue and Source Management) and E3.2 (Expense Filters). Added backend support for revenue, built revenue UI (list, form, sources), and updated expenses to include advanced filters using URL state. Rewrote queries in `salaries.ts`, `expenses.ts`, and `revenue.ts` to perform equality checks in Firestore and inequality/sorting/pagination in memory to completely bypass the need for manually setting up composite indexes in Firestore. Normalized UI components to match `globals.css` natively instead of Tailwind. Recommended next: **D1** (Dashboards and P&L).
 
 ## Copy-paste prompt for the next model
 

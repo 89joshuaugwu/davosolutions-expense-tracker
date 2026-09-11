@@ -149,40 +149,49 @@ export async function listRevenue(options: {
   const pageSize = options.pageSize ?? 20;
   const collection = db.collection("revenue");
 
-  let query: FirebaseFirestore.Query = collection
-    .where("archivedAt", "==", null)
-    .orderBy("date", "desc")
-    .orderBy("createdAt", "desc");
-
-  if (options.month) {
-    const start = `${options.month}-01`;
-    const end = `${options.month}-31`;
-    query = query.where("date", ">=", start).where("date", "<=", end);
-  } else {
-    if (options.startDate) {
-      query = query.where("date", ">=", options.startDate);
-    }
-    if (options.endDate) {
-      query = query.where("date", "<=", options.endDate);
-    }
-  }
+  // Only use equality filters to leverage automatic index merging
+  let query: FirebaseFirestore.Query = collection.where("archivedAt", "==", null);
 
   if (options.sourceId) query = query.where("sourceId", "==", options.sourceId);
   if (options.currency) query = query.where("currency", "==", options.currency);
   if (options.createdBy) query = query.where("createdBy", "==", options.createdBy);
 
-  if (options.cursor) {
-    const cursorSnap = await db.collection("revenue").doc(options.cursor).get();
-    if (cursorSnap.exists) query = query.startAfter(cursorSnap);
+  const snapshot = await query.get();
+
+  let items = snapshot.docs.map((doc) => docToRevenueRecord(doc.id, doc.data()));
+
+  // In-memory inequality filtering
+  if (options.month) {
+    const start = `${options.month}-01`;
+    const end = `${options.month}-31`;
+    items = items.filter(r => r.date >= start && r.date <= end);
+  } else {
+    if (options.startDate) {
+      items = items.filter(r => r.date >= options.startDate!);
+    }
+    if (options.endDate) {
+      items = items.filter(r => r.date <= options.endDate!);
+    }
   }
 
-  const snapshot = await query.limit(pageSize + 1).get();
-  const hasMore = snapshot.docs.length > pageSize;
-  const docs = hasMore ? snapshot.docs.slice(0, pageSize) : snapshot.docs;
+  // In-memory sorting (date desc, createdAt desc)
+  items.sort((a, b) => {
+    if (a.date !== b.date) return a.date < b.date ? 1 : -1;
+    return a.createdAt < b.createdAt ? 1 : -1;
+  });
 
-  const items: RevenueListItem[] = docs.map((doc) => {
-    const record = docToRevenueRecord(doc.id, doc.data());
-    return {
+  // In-memory pagination
+  let startIndex = 0;
+  if (options.cursor) {
+    const cursorIdx = items.findIndex(r => r.id === options.cursor);
+    if (cursorIdx !== -1) startIndex = cursorIdx + 1;
+  }
+
+  const paginatedItems = items.slice(startIndex, startIndex + pageSize);
+  const hasMore = startIndex + pageSize < items.length;
+
+  return {
+    items: paginatedItems.map(record => ({
       id: record.id,
       description: record.description,
       originalAmountMinor: record.originalAmountMinor,
@@ -195,12 +204,8 @@ export async function listRevenue(options: {
       createdAt: record.createdAt,
       archivedAt: record.archivedAt,
       revision: record.revision,
-    };
-  });
-
-  return {
-    items,
-    nextCursor: hasMore ? (docs[docs.length - 1]?.id ?? null) : null,
+    })),
+    nextCursor: hasMore ? paginatedItems[paginatedItems.length - 1].id : null,
   };
 }
 

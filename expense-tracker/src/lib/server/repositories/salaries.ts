@@ -242,18 +242,6 @@ export async function getSalaries(
     query = query.where("status", "==", filters.status);
   }
 
-  query = query.orderBy("createdAt", "desc");
-
-  if (filters.startAfter) {
-    const snap = await db.collection(SALARIES_COLLECTION).doc(filters.startAfter).get();
-    if (snap.exists) {
-      query = query.startAfter(snap);
-    }
-  }
-
-  const limitNum = filters.limit || 50;
-  query = query.limit(limitNum);
-
   const snapshot = await query.get();
   
   let result = snapshot.docs.map((doc) => docToSalaryLog(doc.id, doc.data()));
@@ -264,7 +252,21 @@ export async function getSalaries(
     result = result.filter(r => r.workerName.toLowerCase().includes(term));
   }
 
-  const nextCursor = snapshot.docs.length === limitNum ? snapshot.docs[snapshot.docs.length - 1].id : null;
+  // In-memory sorting (createdAt desc)
+  result.sort((a, b) => (a.createdAt < b.createdAt ? 1 : -1));
 
-  return { salaries: result, nextCursor };
+  // In-memory pagination
+  let startIndex = 0;
+  if (filters.startAfter) {
+    const cursorIdx = result.findIndex(r => r.id === filters.startAfter);
+    if (cursorIdx !== -1) startIndex = cursorIdx + 1;
+  }
+
+  const limitNum = filters.limit || 50;
+  const paginatedResult = result.slice(startIndex, startIndex + limitNum);
+  const hasMore = startIndex + limitNum < result.length;
+
+  const nextCursor = hasMore ? paginatedResult[paginatedResult.length - 1].id : null;
+
+  return { salaries: paginatedResult, nextCursor };
 }

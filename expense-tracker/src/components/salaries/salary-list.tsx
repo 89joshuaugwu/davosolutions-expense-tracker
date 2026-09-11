@@ -98,7 +98,8 @@ export function SalaryList({ initialPeriod }: Props) {
         </select>
         <button
           onClick={() => fetchSalaries()}
-          className="button secondary icon-button"
+          className="icon-button"
+          style={{ border: '1px solid var(--line)', background: 'white', width: '38px', height: '38px' }}
           title="Refresh list"
         >
           <RefreshCw size={16} className={loading && !loadingMore ? "spin" : ""} />

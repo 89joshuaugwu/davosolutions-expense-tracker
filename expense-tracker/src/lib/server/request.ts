@@ -8,17 +8,7 @@ export class RequestError extends Error {
 }
 
 export function assertSameOrigin(request: Request): void {
-  const origin = request.headers.get("origin");
-  const appOrigin = getAppOrigin();
-
-  // Allow local network IP for mobile testing during development
-  if (process.env.NODE_ENV !== "production" && origin === "http://192.168.1.4:3000") {
-    return;
-  }
-
-  if (!isSameOriginRequest(origin, appOrigin)) {
-    throw new RequestError(403, "Request origin is not allowed.");
-  }
+  if (!isSameOriginRequest(request.headers.get("origin"), getAppOrigin())) throw new RequestError(403, "Request origin is not allowed.");
 }
 
 export async function readJsonBody(request: Request, maxBytes = 16_384): Promise<unknown> {

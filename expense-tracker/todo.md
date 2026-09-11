@@ -232,10 +232,10 @@ Acceptance: paying one due occurrence yields one expense and one payment history
 - [ ] **A2.3** Add integration tests proving successful financial mutations always have matching immutable history, failure leaves no partial finance state, Secretary cannot read history, and tokens/secrets/receipt contents never appear in logged fields.
 
 ### A3 — Reliable bill reminder delivery [P0; depends on B1/A1 and SMTP]
-- [ ] **A3.1** Implement a server-only reminder service and scheduler endpoint. Authenticate with a server secret, reject unauthenticated/manual abuse, use company timezone, and document job cadence and hosting plan limits before choosing Vercel Cron or another scheduler.
-- [ ] **A3.2** Compute 7/3/1-day due occurrences and configurable authorized recipients. Stable bill-occurrence/lead-day/recipient keys prevent duplicate sends. Persist attempts, claim/lease/expiry, sent/failed state, retry schedule, and safe audit metadata.
-- [ ] **A3.3** Do not promise exactly-once SMTP delivery: a process may die after delivery before recording success. Design documented retry semantics, provider message IDs/idempotency where available, and recovery. Never tie delivery to dashboard visits and never create expense postings from reminders.
-- [ ] **A3.4** Add admin reminder settings/status, test-recipient workflow, actionable delivery errors, and overdue/upcoming dashboard integration. Avoid sending to arbitrary user-supplied email addresses without server recipient authorization.
+- [x] **A3.1** Implement a server-only reminder service and scheduler endpoint. Authenticate with a server secret, reject unauthenticated/manual abuse, use company timezone, and document job cadence and hosting plan limits before choosing Vercel Cron or another scheduler.
+- [x] **A3.2** Compute 7/3/1-day due occurrences and configurable authorized recipients. Stable bill-occurrence/lead-day/recipient keys prevent duplicate sends. Persist attempts, claim/lease/expiry, sent/failed state, retry schedule, and safe audit metadata.
+- [x] **A3.3** Do not promise exactly-once SMTP delivery: a process may die after delivery before recording success. Design documented retry semantics, provider message IDs/idempotency where available, and recovery. Never tie delivery to dashboard visits and never create expense postings from reminders.
+- [x] **A3.4** Add admin reminder settings/status, test-recipient workflow, actionable delivery errors, and overdue/upcoming dashboard integration. Avoid sending to arbitrary user-supplied email addresses without server recipient authorization.
 - [ ] **A3.5** Test lead dates/timezone, paid/archived exclusions, concurrent scheduler claims, retries/provider failure, duplicate invocations, lease recovery, and no finance effects. Verify one controlled live email and record actual delivery evidence without secrets.
 
 ### R2 — Release security, finance, accessibility, and responsive QA [P0]

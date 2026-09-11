@@ -28,7 +28,7 @@ export async function GET(request: Request) {
     const columns: CsvColumn<SalaryDetail>[] = [
       { header: "ID", key: "id" },
       { header: "Worker Name", key: "workerName" },
-      { header: "Worker Reference", key: "workerReference" },
+      { header: "Worker Reference", key: "workerRef" },
       { header: "Period", key: "period" },
       { header: "Status", key: "status" },
       { header: "Payment Date", key: "paymentDate" },

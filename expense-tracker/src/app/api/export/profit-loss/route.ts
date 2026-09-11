@@ -37,10 +37,9 @@ export async function GET(request: Request) {
     lines.push(escapeCsvValue("Metric") + "," + escapeCsvValue(`Amount (${baseCurrency})`));
     lines.push(`Opening Fund,${escapeCsvValue(toDecimalAmount(summary.openingFundMinor, baseCurrency as any))}`);
     lines.push(`Total Revenue,${escapeCsvValue(toDecimalAmount(summary.totalRevenueMinor, baseCurrency as any))}`);
-    lines.push(`Total Expenses,${escapeCsvValue(toDecimalAmount(summary.totalExpenseMinor, baseCurrency as any))}`);
+    lines.push(`Total Expenses,${escapeCsvValue(toDecimalAmount(summary.totalExpensesMinor, baseCurrency as any))}`);
     lines.push(`Net Profit,${escapeCsvValue(toDecimalAmount(summary.netProfitMinor, baseCurrency as any))}`);
-    lines.push(`Closing Fund,${escapeCsvValue(toDecimalAmount(summary.closingFundMinor, baseCurrency as any))}`);
-    lines.push(`Gross Salaries,${escapeCsvValue(toDecimalAmount(summary.totalGrossSalariesMinor, baseCurrency as any))}`);
+    lines.push(`Closing Balance,${escapeCsvValue(toDecimalAmount(summary.closingBalanceMinor, baseCurrency as any))}`);
     
     lines.push(""); // Empty line
 

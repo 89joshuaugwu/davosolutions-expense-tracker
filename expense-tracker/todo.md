@@ -211,10 +211,10 @@ Acceptance: paying one due occurrence yields one expense and one payment history
 
 ### R1 — CSV reports and exports [P0; depends on D1]
 
-- [ ] **R1.1** Add Super Admin-only report views/exports: monthly P&L, fund utilization, expenses/category, salaries, transport components, bills/due dates, revenue/source, FX detail, audit trail. Apply existing typed filters and permissions server-side.
-- [ ] **R1.2** CSV includes useful headers, ISO business dates, original currency/amount, FX snapshot/date, base currency/amount where relevant. Correctly escape commas/quotes/newlines and neutralize spreadsheet formula injection in user-entered text. Preserve Unicode and minor-unit precision.
-- [ ] **R1.3** Audit successful export initiation/completion according to a documented bounded policy, include actor/filter/report metadata, and avoid logging entire exported payloads. Limit request size/date range or stream/page large results; no silent truncation.
-- [ ] **R1.4** Test denied export requests, exact reconciliation with UI under matching filters, injection strings, multiline notes, large datasets, inactive sessions, and private-cache headers.
+- [x] **R1.1** Add Super Admin-only report views/exports: monthly P&L, fund utilization, expenses/category, salaries, transport components, bills/due dates, revenue/source, FX detail, audit trail. Apply existing typed filters and permissions server-side.
+- [x] **R1.2** CSV includes useful headers, ISO business dates, original currency/amount, FX snapshot/date, base currency/amount where relevant. Correctly escape commas/quotes/newlines and neutralize spreadsheet formula injection in user-entered text. Preserve Unicode and minor-unit precision.
+- [x] **R1.3** Audit successful export initiation/completion according to a documented bounded policy, include actor/filter/report metadata, and avoid logging entire exported payloads. Limit request size/date range or stream/page large results; no silent truncation.
+- [x] **R1.4** Test denied export requests, exact reconciliation with UI under matching filters, injection strings, multiline notes, large datasets, inactive sessions, and private-cache headers.
 - [ ] **R1.5 [P2]** Only if requested after CSV completion: PDF/print output with readable pagination, currency, report period, totals, and confidentiality labeling. Do not claim a browser print dialog is an independently generated PDF service.
 
 ### A1 — Users, roles, visibility, and category administration [P0; depends on F1/E3]

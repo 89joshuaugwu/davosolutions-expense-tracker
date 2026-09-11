@@ -4,7 +4,7 @@ import { useEffect, useState, useCallback } from "react";
 import Link from "next/link";
 import type { TransportListItem } from "@/lib/server/repositories/transport";
 import { formatMoney } from "@/domain/money";
-import { AlertCircle, ChevronLeft, ChevronRight, Plus } from "lucide-react";
+import { AlertCircle, ChevronLeft, ChevronRight, Plus, Download } from "lucide-react";
 
 export function TransportList() {
   const [logs, setLogs] = useState<TransportListItem[]>([]);
@@ -94,6 +94,15 @@ export function TransportList() {
           <Link className="button primary" href="/transport/new">
             <Plus size={16} /> Log Transport
           </Link>
+          <a 
+            href={`/api/export/transport?month=${currentMonth}`}
+            className="button secondary"
+            target="_blank"
+            rel="noopener noreferrer"
+            title="Export to CSV"
+          >
+            <Download size={16} /> Export
+          </a>
         </div>
       </div>
 

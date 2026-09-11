@@ -3,6 +3,7 @@
 import { useEffect, useState, useCallback } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
+import { Download } from "lucide-react";
 import type { RevenueSource } from "@/domain/models";
 import type { CurrencyCode } from "@/domain/money";
 
@@ -170,6 +171,15 @@ export function RevenueClient() {
             Reset Filters
           </button>
         )}
+        <div style={{ flex: 1 }}></div>
+        <a 
+          href={`/api/export/revenue?startDate=${startDate}&endDate=${endDate}&sourceId=${sourceId}&currency=${currency}`}
+          className="button secondary"
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          <Download size={16} /> Export CSV
+        </a>
       </div>
 
       {error && (

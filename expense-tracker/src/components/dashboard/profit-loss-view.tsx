@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
-import { AlertCircle, ArrowDown, ArrowUp, Loader2, RefreshCw } from "lucide-react";
+import { AlertCircle, ArrowDown, ArrowUp, Loader2, RefreshCw, Download } from "lucide-react";
 import { formatMoney } from "@/domain/money";
 
 export function ProfitLossView() {
@@ -60,6 +60,17 @@ export function ProfitLossView() {
           >
             <RefreshCw size={16} className={loading ? "spin" : ""} />
           </button>
+          {analytics && (
+            <a 
+              href={`/api/export/profit-loss?month=${month}`}
+              className="button secondary"
+              target="_blank"
+              rel="noopener noreferrer"
+              title="Export P&L to CSV"
+            >
+              <Download size={16} /> Export
+            </a>
+          )}
         </div>
       </div>
 

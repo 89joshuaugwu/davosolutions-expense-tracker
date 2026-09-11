@@ -1,8 +1,8 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
 import Link from "next/link";
-import { AlertCircle, ArrowUpRight, Loader2, Users, RefreshCw } from "lucide-react";
+import { AlertCircle, ArrowUpRight, Loader2, RefreshCw, Users, Download } from "lucide-react";
 import { CURRENCIES, formatMoney, type CurrencyCode } from "@/domain/money";
 
 interface SalaryItem {
@@ -104,6 +104,15 @@ export function SalaryList({ initialPeriod }: Props) {
         >
           <RefreshCw size={16} className={loading && !loadingMore ? "spin" : ""} />
         </button>
+        <div style={{ flex: 1 }}></div>
+        <a 
+          href={`/api/export/salaries?period=${period}&status=${statusFilter === 'all' ? '' : statusFilter}`}
+          className="button secondary"
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          <Download size={16} /> Export CSV
+        </a>
       </div>
 
       {error && (

@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback } from "react";
 import Link from "next/link";
-import { AlertCircle, ArrowUpRight, Loader2, ReceiptText, RefreshCw } from "lucide-react";
+import { AlertCircle, ArrowUpRight, Loader2, ReceiptText, RefreshCw, Download } from "lucide-react";
 import { CURRENCIES, formatMoney, type CurrencyCode } from "@/domain/money";
 import type { Category } from "@/domain/models";
 import type { Frequency } from "@/domain/models";
@@ -194,6 +194,15 @@ export function ExpenseList({ initialMonth }: Props) {
             Reset Filters
           </button>
         )}
+        <div style={{ flex: 1 }}></div>
+        <a 
+          href={`/api/export/expenses?${buildQueryString()}`}
+          className="button secondary"
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          <Download size={16} /> Export CSV
+        </a>
       </div>
 
       {error && (

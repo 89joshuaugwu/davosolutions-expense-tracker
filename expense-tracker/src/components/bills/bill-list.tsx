@@ -3,7 +3,7 @@
 import { useEffect, useState, useCallback } from "react";
 import Link from "next/link";
 import { formatMoney } from "@/domain/money";
-import { AlertCircle, Calendar, Plus } from "lucide-react";
+import { AlertCircle, Calendar, Plus, Download } from "lucide-react";
 
 interface BillListItem {
   id: string;
@@ -80,6 +80,15 @@ export function BillList() {
           <Link href="/bills/new" className="button primary">
             <Plus size={16} /> New Bill
           </Link>
+          <a 
+            href={`/api/export/bills?status=${statusFilter}`}
+            className="button secondary"
+            target="_blank"
+            rel="noopener noreferrer"
+            title="Export to CSV"
+          >
+            <Download size={16} /> Export
+          </a>
         </div>
       </div>
 
